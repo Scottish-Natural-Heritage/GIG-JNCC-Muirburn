@@ -1,5 +1,6 @@
 """
 Summary: 
+TEST CHANGES Duncan
 This module contains code for testing the scaling up on JASMIN of calculating burn locations in Scotland, using Sentinel 2 Analysis Ready Data held on CEDA.
 
 Description:
@@ -11,7 +12,7 @@ Finally the imagery datasets and logfiles are exported.
 
 Contributors: 
     Alastair Graham, Geoger Ltd, @ajggeoger
-    Duncan Blake, Nature Scotland
+    Duncan Blake, NatureScot
 
 Possible things to do:
 - look at cloud masking
