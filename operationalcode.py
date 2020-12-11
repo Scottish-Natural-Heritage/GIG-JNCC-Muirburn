@@ -11,7 +11,7 @@ Finally the imagery datasets and logfiles are exported.
 
 Contributors: 
     Alastair Graham, Geoger Ltd, @ajggeoger
-    Duncan Blake, Nature Scotland
+    Duncan Blake, NatureScot
 
 Possible things to do:
 - look at cloud masking
@@ -222,7 +222,8 @@ def maskify(image, cloudmask):#, landmask):
     image -- the image band to be processed
     cloudmask -- the cloudmask    
     '''    
-    maskedimage = image * cloudmask
+    cloudland = rasterio.mask.mask(cloudmask, image, crop=True)
+    maskedimage = image * cloudland
     logging.debug('Cloud masking complete')
     return maskedimage
 

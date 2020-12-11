@@ -9,7 +9,7 @@ Contributors:
 # --Main set up--
 ARD_WRKDIR = '/neodc/sentinel_ard/data/sentinel_2/2019/04'           # Input ARD data (default is April 2019)  
 GWS = '/gws/nopw/j04/jncc_muirburn'                                  # Group workspace
-GWS_DATA = '/gws/nopw/j04/jncc_muirburn/users'                       # GWS output location (needs an output folder added) 
+GWS_DATA = '/gws/nopw/j04/jncc_muirburn/users/abdb2/test1'                       # GWS output location (needs an output folder added) 
 LANDMASK = '/gws/nopw/j04/jncc_muirburn/data/Scot_LandMask/scot_landonly.shp' # Landmask shapefile location
 
 # --Other parameters--
@@ -22,7 +22,7 @@ THRESHOLD = {'threshdsavi': 0.2853, 'threshpostnbr': 0.2395, 'threshdnbr2': 0.8,
 GROW = {'dsaviq1thresh': 0.206748, 'postnbrq1thresh': 0.173447, 'cloudthresh': 0.8, 'type': 'global'}
 
 # Toggle the file count function on and off. Value can be 'off' or 'on'
-FILECOUNT = 'off'
+FILECOUNT = 'on'
 
 # Cloud cover threshold (for use in future versions, not called in current code)
 #CLOUD = 0.9 
