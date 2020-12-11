@@ -222,8 +222,7 @@ def maskify(image, cloudmask):#, landmask):
     image -- the image band to be processed
     cloudmask -- the cloudmask    
     '''    
-    cloudland = rasterio.mask.mask(cloudmask, image, crop=True)
-    maskedimage = image * cloudland
+    maskedimage = image * cloudmask
     logging.debug('Cloud masking complete')
     return maskedimage
 
