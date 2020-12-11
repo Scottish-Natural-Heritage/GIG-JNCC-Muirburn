@@ -1,6 +1,5 @@
 """
 Summary: 
-TEST CHANGES Duncan
 This module contains code for testing the scaling up on JASMIN of calculating burn locations in Scotland, using Sentinel 2 Analysis Ready Data held on CEDA.
 
 Description:
@@ -223,7 +222,8 @@ def maskify(image, cloudmask):#, landmask):
     image -- the image band to be processed
     cloudmask -- the cloudmask    
     '''    
-    maskedimage = image * cloudmask
+    cloudland = rasterio.mask.mask(cloudmask, image, crop=True)
+    maskedimage = image * cloudland
     logging.debug('Cloud masking complete')
     return maskedimage
 
