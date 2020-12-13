@@ -329,13 +329,14 @@ def post(imagename, cloudname):
         
     with rasterio.open(os.path.join(od, 'postimagecrop.tif')) as postdataset:
         profile = postdataset.profile.copy()
+        # read cropped cloud image back in
+        cloudcrop = rasterio.open(os.path.join(od,'postimagecrop_cloud.tif'))
          
-        
         print('Masking for cloud')
-        red = maskify(postdataset.read(3), dataset)
-        nir = maskify(postdataset.read(7), dataset)
-        swir1 = maskify(postdataset.read(9), dataset)
-        swir2 = maskify(postdataset.read(10), dataset)
+        red = maskify(postdataset.read(3), cloudcrop)
+        nir = maskify(postdataset.read(7), cloudcrop)
+        swir1 = maskify(postdataset.read(9), cloudcrop)
+        swir2 = maskify(postdataset.read(10), cloudcrop)
 
         logging.debug('POST image data read')
         return red, nir, swir1, swir2, profile
