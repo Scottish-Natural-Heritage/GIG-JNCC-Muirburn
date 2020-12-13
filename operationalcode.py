@@ -332,10 +332,10 @@ def post(imagename, cloudname):
          
         
         print('Masking for cloud')
-        red = maskify(postdataset.read(3), 'postimagecrop_cloud.tif')
-        nir = maskify(postdataset.read(7), 'postimagecrop_cloud.tif')
-        swir1 = maskify(postdataset.read(9), 'postimagecrop_cloud.tif')
-        swir2 = maskify(postdataset.read(10), 'postimagecrop_cloud.tif')
+        red = maskify(postdataset.read(3), dataset)
+        nir = maskify(postdataset.read(7), dataset)
+        swir1 = maskify(postdataset.read(9), dataset)
+        swir2 = maskify(postdataset.read(10), dataset)
 
         logging.debug('POST image data read')
         return red, nir, swir1, swir2, profile
