@@ -207,8 +207,15 @@ def getcloudmask(cloudname):
         new_mask = np.zeros((cloudin.shape))
         cloud_index = np.nonzero(cloudin < 1)
         new_mask[cloud_index[0], cloud_index[1]] = 1
-        
-        return new_mask
+        # copy the profile and update to integer
+        profile = clouddataset.profile.copy()
+        profile.update(dtype=rasterio.uint8,
+            count=1,
+            compress='lzw')  
+
+    with rasterio.open(os.path.join(od, 'cloudmask.tif'), "w", **profile) as dest:
+        dest.write(new_mask, 1)
+
 
 
 def maskify(image, cloudmask):#, landmask):
@@ -227,7 +234,7 @@ def maskify(image, cloudmask):#, landmask):
     return maskedimage
 
 
-def masktheland(dataset):
+def masktheland(dataset, outimagename):
     '''
     Masks the image dataset by the land mask
     
@@ -247,7 +254,7 @@ def masktheland(dataset):
         "transform": out_transform})
 
     # Write to temporary file
-    with rasterio.open(os.path.join(od, 'temp.tif'), "w", **out_meta) as dest:
+    with rasterio.open(os.path.join(od, outimagename), "w", **out_meta) as dest:
         dest.write(out_image)
 
 
@@ -312,17 +319,23 @@ def post(imagename, cloudname):
         print('CRS: ', dataset.crs)
 
         print('Cropping to land mask')
-        masktheland(dataset)
+        masktheland(dataset, 'postimagecrop.tif')
+
+    getcloudmask(cloudname)
+
+    with rasterio.open(os.path.join(od, 'cloudmask.tif')) as dataset:
+        print('Cropping cloud to land mask')
+        masktheland(dataset, 'postimagecrop_cloud.tif')
         
-    with rasterio.open(os.path.join(od, 'temp.tif')) as dataset:
-        profile = dataset.profile.copy()
-        cloudmask = getcloudmask(cloudname) 
+    with rasterio.open(os.path.join(od, 'postimagecrop.tif')) as postdataset:
+        profile = postdataset.profile.copy()
+         
         
         print('Masking for cloud')
-        red = maskify(dataset.read(3), cloudmask)
-        nir = maskify(dataset.read(7), cloudmask)
-        swir1 = maskify(dataset.read(9), cloudmask)
-        swir2 = maskify(dataset.read(10), cloudmask)
+        red = maskify(postdataset.read(3), 'postimagecrop_cloud.tif')
+        nir = maskify(postdataset.read(7), 'postimagecrop_cloud.tif')
+        swir1 = maskify(postdataset.read(9), 'postimagecrop_cloud.tif')
+        swir2 = maskify(postdataset.read(10), 'postimagecrop_cloud.tif')
 
         logging.debug('POST image data read')
         return red, nir, swir1, swir2, profile
