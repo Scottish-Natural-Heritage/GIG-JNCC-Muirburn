@@ -209,12 +209,9 @@ def getcloudmask(cloudname):
         new_mask[cloud_index[0], cloud_index[1]] = 1
         # copy the profile and update to integer
         profile = clouddataset.profile.copy()
-        profile.update(dtype=rasterio.uint8,
-            count=1,
-            compress='lzw')  
 
     with rasterio.open(os.path.join(od, 'cloudmask.tif'), "w", **profile) as dest:
-        dest.write(new_mask, 1)
+        dest.write(new_mask)
 
 
 
