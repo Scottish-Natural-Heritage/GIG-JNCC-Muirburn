@@ -39,6 +39,8 @@ from fiona.crs import from_epsg
 from rasterio.features import sieve
 from scipy.ndimage import label, generate_binary_structure
 
+import config
+
 # --- Functions ---
 
 def directorycheck(wd, od):
