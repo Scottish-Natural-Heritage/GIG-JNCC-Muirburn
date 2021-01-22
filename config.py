@@ -28,7 +28,7 @@ FILECOUNT = 'on'
 #CLOUD = 0.9 
 
 # Scottish granule filter - only process the granules for Scotland. 
-PROC_GRANULES = ['T29UPB', 'T29VNC', 'T29VND', 'T29VNE', 'T29VNF', 'T29VPC', 'T29VPD', 'T29VPE', 'T29VPF', 'T29VPG', 'T30UUF', 'T30UUG', 'T30UVF', 'T30UVG', 'T30UWF', 'T30UWG', 'T30VUH', 'T30VUJ', 'T30VUK', 'T30VUL', 'T30VUM', 'T30VVH', 'T30VVJ', 'T30VVK', 'T30VVL', 'T30VVM', 'T30VVN', 'T30VWH', 'T30VWJ', 'T30VWK', 'T30VWL', 'T30VWM', 'T30VWN', 'T30VXH', 'T30VXJ', 'T30VXK', 'T30VXL', 'T30VXM', 'T30VXN', 'T31VCG', 'T31VCH']
+PROC_GRANULES = ['T29UPB', 'T29VND', 'T29VNE', 'T29VPC', 'T29VPD', 'T29VPE', 'T30UUF', 'T30UUG', 'T30UVF', 'T30UVG', 'T30UWG', 'T30VUH', 'T30VUJ', 'T30VUK', 'T30VUL', 'T30VVH', 'T30VVJ', 'T30VVK', 'T30VVL', 'T30VWH', 'T30VWJ', 'T30VWL', 'T30VWM', 'T30VWN', 'T30VXM', 'T30VXN']
 
 # Date filter for seasonality - do not process 01 Sept - 31 dec inclusive - Scottish ARD only starts in Feb 2019
 MONTHS_OUT = ['09', '10', '11', '12']
