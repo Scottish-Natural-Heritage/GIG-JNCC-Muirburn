@@ -177,7 +177,7 @@ def maskimage(imagename, imagetransform, cols, rows, cloudname):
     cloudname -- path and filename of cloud cover dataset to be processed
     ''' 
     # open land/sea raster and get transform
-    landmask = gdal.Open(os.path.join(od, config.LANDMASK))
+    landmask = gdal.Open(config.LANDMASK)
     land_transform = landmask.GetGeoTransform()
 
     # calculate offsets for land/sea raster import. NB offsets are in pixels
