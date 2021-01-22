@@ -4,13 +4,13 @@ burn locations in Scotland, using data held on CEDA
     
 Contributors: 
     Alastair Graham, Geoger Ltd, @ajggeoger
-
+    Duncan Blake, NatureScot
 """
 # --Main set up--
-ARD_WRKDIR = '/neodc/sentinel_ard/data/sentinel_2/2019/04'           # Input ARD data (default is April 2019)  
+ARD_WRKDIR = '/neodc/sentinel_ard/data/sentinel_2/2020/04'           # Input ARD data (default is April 2019)  
 GWS = '/gws/nopw/j04/jncc_muirburn'                                  # Group workspace
-GWS_DATA = '/gws/nopw/j04/jncc_muirburn/users/abdb2/test1'                       # GWS output location (needs an output folder added) 
-LANDMASK = '/gws/nopw/j04/jncc_muirburn/data/Scot_LandMask/scot_landonly.shp' # Landmask shapefile location
+GWS_DATA = '/gws/nopw/j04/jncc_muirburn/users/abdb2/duncan_v1'                       # GWS output location (needs an output folder added) 
+LANDMASK = '/gws/nopw/j04/jncc_muirburn/data/Scot_LandMask/landmask.tif' # Landmask shapefile location
 
 # --Other parameters--
 # Image thresholding values - the variable names are set in the code, but the values can be changed here.
