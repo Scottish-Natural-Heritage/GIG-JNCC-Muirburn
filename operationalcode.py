@@ -592,7 +592,7 @@ if __name__ == "__main__":
 
             print('--CALCULATING dSAVI--')
             # Pre/post SAVI difference
-            dsavi = savi(postnir, postred) - savi(prenir, prered)
+            dsavi = savi(postnir, postr) - savi(prenir, prer)
 
             # Thresholding
             print('--CALCULATING THRESHOLDING--')
