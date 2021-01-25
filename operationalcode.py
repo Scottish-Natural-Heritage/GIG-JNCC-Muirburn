@@ -390,7 +390,7 @@ def saveraster(od, datafile, profile, name, prename, postname):
     else:
         # Change the format driver for the destination dataset to
         #kwds['driver'] = 'GTiff'
-        kwds['dtype'] = 'float32'
+        kwds['dtype'] = 'int32'
         kwds['count'] = 1
 
         outname = prename[0] + prename[1] + prename[3] + prename[4] + '_' + postname[0] + postname[1] + postname[3] + postname[4] + '_' + name + '.tif'
@@ -545,7 +545,7 @@ if __name__ == "__main__":
             post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols, no_rows, os.path.join(postlist[1], cloudname))
 
             #### FOR TESTING TO REDUCE RAM REQUIREMENTS ####
-            post_array = post_array[:,4000:5000,4000:5000].astype('uint16')
+            #post_array = post_array[:,4000:5000,4000:5000].astype('uint16')
 
             logging.debug('POST image data read')
         
@@ -574,7 +574,7 @@ if __name__ == "__main__":
         pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols, no_rows, os.path.join(prelist[1], cloudname))
 
         #### FOR TESTING TO REDUCE RAM REQUIREMENTS ####
-        pre_array = pre_array[:,4000:5000,4000:5000].astype('uint16')
+        #pre_array = pre_array[:,4000:5000,4000:5000].astype('uint16')
 
         if prelist[2]==postlist[2]:
 
