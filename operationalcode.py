@@ -484,9 +484,9 @@ if __name__ == "__main__":
     toprocess = getdatalist(wd, proc_list, config.PROC_GRANULES, config.MONTHS_OUT)
 
     print('Processing list constructed' + ' - number of files to process: ' + str(len(toprocess)))
-    print(*toprocess, sep = "\n")
+    # print(*toprocess, sep = "\n")
     logging.debug('Processing list constructed')
-    logging.debug(toprocess)
+    # logging.debug(toprocess)
 
     # Start timer
     starttime1 = datetime.datetime.now()
@@ -526,7 +526,7 @@ if __name__ == "__main__":
             names.append('clouds.tif')
             s = '_'
             cloudname = s.join(names)
-            print(cloudname)
+            # print(cloudname)
             
             # open Sentinel 2 image to get transform
             postimage = gdal.Open(os.path.join(postlist[1], postlist[0]))
@@ -535,7 +535,7 @@ if __name__ == "__main__":
             print('Bands: ', postimage.RasterCount)
             print('Width: ', postimage.RasterXSize)
             print('Height: ', postimage.RasterYSize)
-            print('CRS: ', postimage.GetProjection())
+            # print('CRS: ', postimage.GetProjection())
             postim_transform = postimage.GetGeoTransform()
             no_cols = postimage.RasterXSize
             no_rows = postimage.RasterYSize
@@ -543,9 +543,6 @@ if __name__ == "__main__":
             print('Cropping to land and cloud masks')
 
             post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols, no_rows, os.path.join(postlist[1], cloudname))
-
-            #### FOR TESTING TO REDUCE RAM REQUIREMENTS ####
-            #post_array = post_array[:,4000:5000,4000:5000].astype('uint16')
 
             logging.debug('POST image data read')
         
@@ -566,15 +563,12 @@ if __name__ == "__main__":
         print('Bands: ', preimage.RasterCount)
         print('Width: ', preimage.RasterXSize)
         print('Height: ', preimage.RasterYSize)
-        print('CRS: ', preimage.GetProjection())
+        # print('CRS: ', preimage.GetProjection())
         preim_transform = preimage.GetGeoTransform()
         no_cols = preimage.RasterXSize
         no_rows = preimage.RasterYSize
 
         pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols, no_rows, os.path.join(prelist[1], cloudname))
-
-        #### FOR TESTING TO REDUCE RAM REQUIREMENTS ####
-        #pre_array = pre_array[:,4000:5000,4000:5000].astype('uint16')
 
         if prelist[2]==postlist[2]:
 
@@ -597,13 +591,13 @@ if __name__ == "__main__":
             # Thresholding
             print('--CALCULATING THRESHOLDING--')
             thresholds = config.THRESHOLD 
-            print('Thresholds used: ', thresholds)
+            # print('Thresholds used: ', thresholds)
             burnseed = threshold_imgs(dsavi, postnbr, dnbr2, thresholds)
 
             # Region growing
             print('--CALCULATING BURN REGIONS--')
             thresholds = config.GROW 
-            print('Thresholds used: ', thresholds)
+            # print('Thresholds used: ', thresholds)
             burnarray = grow_burn(dsavi, postnbr, dnbr2, thresholds)
 
             # Seed/burn intersection
@@ -616,9 +610,9 @@ if __name__ == "__main__":
             #saveraster(od, postnbr, pre_profile, 'postnbr', prelist[0], postlist[0])
             #saveraster(od, dnbr2, pre_profile, 'dnbr2', prelist[0], postlist[0])
             #saveraster(od, dsavi, pre_profile, 'dsavi', prelist[0], postlist[0])
-            saveraster(od, burnseed, pre_profile, 'burnseed', prelist[0], postlist[0])
-            saveraster(od, burnarray, pre_profile, 'burnarea', prelist[0], postlist[0])
-            saveraster(od, burnextents, pre_profile, 'burnextent', prelist[0], postlist[0])
+            #saveraster(od, burnseed, pre_profile, 'burnseed', prelist[0], postlist[0])
+            #saveraster(od, burnarray, pre_profile, 'burnarea', prelist[0], postlist[0])
+            #saveraster(od, burnextents, pre_profile, 'burnextent', prelist[0], postlist[0])
 
             saveVector(od, burnextents, pre_profile, preim_transform, prelist[0], postlist[0])
 
