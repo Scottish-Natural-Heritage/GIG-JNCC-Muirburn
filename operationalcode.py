@@ -146,7 +146,7 @@ def countfiles(wd):
     '''
     fileno = []
     for r, d, f in os.walk(wd, followlinks=True):
-        for name in glob.fnmatch.filter(f, '*vmsk_sharp_rad_srefdem_stdsref.tif'):
+        for name in glob.fnmatch.filter(f, '*osgb_vmsk_sharp_rad_srefdem_stdsref.tif'):
         # os.walk method is used to travel throught the wd.
             fileno.append([r, len(f)])
     
