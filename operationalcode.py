@@ -390,7 +390,7 @@ def saveraster(od, datafile, profile, name, prename, postname):
     else:
         # Change the format driver for the destination dataset to
         #kwds['driver'] = 'GTiff'
-        kwds['dtype'] = 'int32'
+        kwds['dtype'] = 'float32'
         kwds['count'] = 1
 
         outname = prename[0] + prename[1] + prename[3] + prename[4] + '_' + postname[0] + postname[1] + postname[3] + postname[4] + '_' + name + '.tif'
