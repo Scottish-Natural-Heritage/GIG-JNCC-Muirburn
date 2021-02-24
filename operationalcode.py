@@ -215,7 +215,7 @@ def nbr(swir1, nir):
     swir1 -- short wave infra-red 1 band 
     nir -- near infra-red band
     '''
-    nbr = np.ones(nir.shape).astype(rasterio.float32) * -1
+    nbr = np.zeros(nir.shape).astype(rasterio.float32)
     mask = nir*swir1!=0 # Deal with divide by zero
     nbr[mask] = ((swir1[mask] - nir[mask])/(swir1[mask] + nir[mask]))
 
@@ -232,7 +232,7 @@ def nbr2(swir2, swir1):
     swir2 -- short wave infra-red 2 band 
     swir1 -- short wave infra-red 1 band 
     '''
-    nbr2 = np.ones(swir1.shape).astype(rasterio.float32) * -1
+    nbr2 = np.zeros(swir1.shape).astype(rasterio.float32)
     mask = swir1*swir2!=0 # Deal with divide by zero
     nbr2[mask] = ((swir2[mask] - swir1[mask])/(swir2[mask] + swir1[mask]))
 
@@ -251,7 +251,7 @@ def savi(nir, red, L = 0.5):
     red -- red band
     L -- equation parameter
     '''
-    savi = np.ones(nir.shape).astype(rasterio.float32) * -1
+    savi = np.zeros(nir.shape).astype(rasterio.float32)
     mask = nir*red!=0 # Deal with divide by zero
     savi[mask] = (-1 * (1.5 * ((nir[mask] - red[mask]) / (nir[mask] + red[mask] + L))))
   
@@ -581,12 +581,22 @@ if __name__ == "__main__":
             postnbr = nbr(postswir1, postnir)
 
             print('--CALCULATING dNBR2--')
+            postnbr2 = nbr2(postswir2, postswir1)
+            prenbr2 = nbr2(preswir2, preswir1)
+            # combine so that nodata values (zero) in either index layer stay nodata in the output
+            mask = postnbr2*prenbr2!=0
             # Pre/post NBR2 difference
-            dnbr2 = nbr2(postswir2, postswir1) - nbr2(preswir2, preswir1)
+            dnbr2 = np.zeros(postnbr2.shape).astype(rasterio.float32)
+            dnbr2[mask] = postnbr2[mask] - prenbr2[mask]
 
             print('--CALCULATING dSAVI--')
+            postsavi = savi(postnir, postr)
+            presavi = savi(prenir, prer)
+            # combine so that nodata values (zero) in either index layer stay nodata in the output
+            mask = postsavi*presavi!=0
             # Pre/post SAVI difference
-            dsavi = savi(postnir, postr) - savi(prenir, prer)
+            dsavi = np.zeros(postsavi.shape).astype(rasterio.float32)
+            dsavi[mask] = postsavi[mask] - presavi[mask]
 
             # Thresholding
             print('--CALCULATING THRESHOLDING--')
