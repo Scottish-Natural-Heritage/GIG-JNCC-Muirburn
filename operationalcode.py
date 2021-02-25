@@ -564,12 +564,12 @@ if __name__ == "__main__":
         # PRE FIRE IMAGE
         # create associated cloud image name
         # gets cloud name
-        names = postlist[0].split('_')[:7]
+        names = prelist[0].split('_')[:7]
         names.append('clouds.tif')
         s = '_'
         cloudname = s.join(names)
         # gets topographic shadow
-        tnames = postlist[0].split('_')[:7]
+        tnames = prelist[0].split('_')[:7]
         tnames.append('toposhad.tif')
         t = '_'
         toponame = t.join(tnames)
