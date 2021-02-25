@@ -195,7 +195,7 @@ def maskimage(imagename, imagetransform, cols, rows, cloudname, toponame):
     cloud_index = np.nonzero(cloudin < 1)
     s2_cloud[cloud_index[0], cloud_index[1]] = 1
     
-    # import cloudmask and convert to zeros/ones
+    # import topomask and convert to zeros/ones
     topomask = gdal.Open(toponame)
     topoin = topomask.GetRasterBand(1).ReadAsArray().astype('uint16')
     s2_topo = np.zeros((topoin.shape))
@@ -531,12 +531,14 @@ if __name__ == "__main__":
             # post-fire image
             # gets cloud name
             names = postlist[0].split('_')[:7]
-            cnames = names.append('clouds.tif')
+            names.append('clouds.tif')
             s = '_'
-            cloudname = s.join(cnames)
-            # print(cloudname)
-            tnames = names.append('toposhad.tif')
-            toponame = s.join(tnames)
+            cloudname = s.join(names)
+            # gets topographic shadow
+            tnames = postlist[0].split('_')[:7]
+            tnames.append('toposhad.tif')
+            t = '_'
+            toponame = t.join(tnames)
             
             # open Sentinel 2 image to get transform
             postimage = gdal.Open(os.path.join(postlist[1], postlist[0]))
@@ -562,13 +564,15 @@ if __name__ == "__main__":
         # PRE FIRE IMAGE
         # create associated cloud image name
         # gets cloud name
-        names = prelist[0].split('_')[:7]
-        cnames = names.append('clouds.tif')
+        names = postlist[0].split('_')[:7]
+        names.append('clouds.tif')
         s = '_'
-        cloudname = s.join(cnames)
-        # print(cloudname)
-        tnames = names.append('toposhad.tif')
-        toponame = s.join(tnames)
+        cloudname = s.join(names)
+        # gets topographic shadow
+        tnames = postlist[0].split('_')[:7]
+        tnames.append('toposhad.tif')
+        t = '_'
+        toponame = t.join(tnames)
 
         # open Sentinel 2 image to get transform
         preimage = gdal.Open(os.path.join(prelist[1], prelist[0]))
