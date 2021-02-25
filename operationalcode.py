@@ -163,18 +163,19 @@ def countfiles(wd):
     return fileno
 
 
-def maskimage(imagename, imagetransform, cols, rows, cloudname):
+def maskimage(imagename, imagetransform, cols, rows, cloudname, toponame):
     '''
-    Masks the image dataset by the land/sea and cloud masks
+    Masks the image dataset by the land/sea and cloud and topographic shadow masks
     
     Return:
-    An array of the chosen bands with cloud and sea areas as zeroes
+    An array of the chosen bands with cloud, shadow and sea areas as zeroes
     Profile of the input image
 
     Keyword arguments:
     imagename -- path and filename of image to be processed
     imagetransform, cols, rows - parameters for importing area of land raster to match the granule extent
     cloudname -- path and filename of cloud cover dataset to be processed
+    toponame -- path and filename of topographic shadow dataset to be processed
     ''' 
     # open land/sea raster and get transform
     landmask = gdal.Open(config.LANDMASK)
@@ -194,14 +195,21 @@ def maskimage(imagename, imagetransform, cols, rows, cloudname):
     cloud_index = np.nonzero(cloudin < 1)
     s2_cloud[cloud_index[0], cloud_index[1]] = 1
     
+    # import cloudmask and convert to zeros/ones
+    topomask = gdal.Open(toponame)
+    topoin = topomask.GetRasterBand(1).ReadAsArray().astype('uint16')
+    s2_topo = np.zeros((topoin.shape))
+    topo_index = np.nonzero(topoin < 1)
+    s2_topo[topo_index[0], topo_index[1]] = 1
+    
     # read in bands required from image using rasterio
     with rasterio.open(imagename, 'r') as s2_image:
       s2_profile = s2_image.profile
       s2_array = s2_image.read((3,7,9,10)).astype('uint16') # double bracket required for 3D array
       # multiply 3D array of bands by two mask arrays to make all area of sea and cloud to be zero.
-      s2_array = s2_array * s2_cloud * s2_land   
+      s2_array = s2_array * s2_cloud * s2_land * s2_topo   
 
-    del s2_cloud, s2_land, cloudin, cloud_index
+    del s2_cloud, s2_land, cloudin, cloud_index, topoin, topo_index, s2_cloud, s2_topo
 
     return s2_array, s2_profile
 
@@ -523,10 +531,12 @@ if __name__ == "__main__":
             # post-fire image
             # gets cloud name
             names = postlist[0].split('_')[:7]
-            names.append('clouds.tif')
+            cnames = names.append('clouds.tif')
             s = '_'
-            cloudname = s.join(names)
+            cloudname = s.join(cnames)
             # print(cloudname)
+            tnames = names.append('toposhad.tif')
+            toponame = s.join(tnames)
             
             # open Sentinel 2 image to get transform
             postimage = gdal.Open(os.path.join(postlist[1], postlist[0]))
@@ -542,7 +552,7 @@ if __name__ == "__main__":
 
             print('Cropping to land and cloud masks')
 
-            post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols, no_rows, os.path.join(postlist[1], cloudname))
+            post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols, no_rows, os.path.join(postlist[1], cloudname), os.path.join(postlist[1], toponame))
 
             logging.debug('POST image data read')
         
@@ -551,10 +561,14 @@ if __name__ == "__main__":
 
         # PRE FIRE IMAGE
         # create associated cloud image name
+        # gets cloud name
         names = prelist[0].split('_')[:7]
-        names.append('clouds.tif')
+        cnames = names.append('clouds.tif')
         s = '_'
-        cloudname = s.join(names)
+        cloudname = s.join(cnames)
+        # print(cloudname)
+        tnames = names.append('toposhad.tif')
+        toponame = s.join(tnames)
 
         # open Sentinel 2 image to get transform
         preimage = gdal.Open(os.path.join(prelist[1], prelist[0]))
@@ -568,7 +582,7 @@ if __name__ == "__main__":
         no_cols = preimage.RasterXSize
         no_rows = preimage.RasterYSize
 
-        pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols, no_rows, os.path.join(prelist[1], cloudname))
+        pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols, no_rows, os.path.join(prelist[1], cloudname), os.path.join(prelist[1], toponame))
 
         if prelist[2]==postlist[2]:
 
