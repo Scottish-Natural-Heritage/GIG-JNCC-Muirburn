@@ -209,7 +209,7 @@ def maskimage(imagename, imagetransform, cols, rows, cloudname, toponame):
       # multiply 3D array of bands by two mask arrays to make all area of sea and cloud to be zero.
       s2_array = s2_array * s2_cloud * s2_land * s2_topo   
 
-    del s2_cloud, s2_land, cloudin, cloud_index, topoin, topo_index, s2_cloud, s2_topo
+    del s2_cloud, s2_land, cloudin, cloud_index, topoin, topo_index, s2_topo
 
     return s2_array, s2_profile
 
