@@ -207,7 +207,11 @@ def maskimage(imagename, imagetransform, cols, rows, cloudname, toponame):
       s2_profile = s2_image.profile
       s2_array = s2_image.read((3,7,9,10)).astype('uint16') # double bracket required for 3D array
       # multiply 3D array of bands by two mask arrays to make all area of sea and cloud to be zero.
-      s2_array = s2_array * s2_cloud * s2_land * s2_topo   
+      print('--S2_array data type on import--')
+      print(s2_array.dtype)
+      s2_array = s2_array * s2_cloud * s2_land * s2_topo  
+      print('--S2_array data type after multiplication --')
+      print(s2_array.dtype)
 
     del s2_cloud, s2_land, cloudin, cloud_index, topoin, topo_index, s2_topo
 
