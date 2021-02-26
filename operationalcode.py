@@ -190,15 +190,15 @@ def maskimage(imagename, imagetransform, cols, rows, cloudname, toponame):
 
     # import cloudmask and convert to zeros/ones
     cloudmask = gdal.Open(cloudname)
-    cloudin = cloudmask.GetRasterBand(1).ReadAsArray().astype('uint16')
-    s2_cloud = np.zeros((cloudin.shape))
+    cloudin = cloudmask.GetRasterBand(1).ReadAsArray()
+    s2_cloud = np.zeros((cloudin.shape)).astype('uint16')
     cloud_index = np.nonzero(cloudin < 1)
     s2_cloud[cloud_index[0], cloud_index[1]] = 1
     
     # import topomask and convert to zeros/ones
     topomask = gdal.Open(toponame)
-    topoin = topomask.GetRasterBand(1).ReadAsArray().astype('uint16')
-    s2_topo = np.zeros((topoin.shape))
+    topoin = topomask.GetRasterBand(1).ReadAsArray()
+    s2_topo = np.zeros((topoin.shape)).astype('uint16')
     topo_index = np.nonzero(topoin < 1)
     s2_topo[topo_index[0], topo_index[1]] = 1
     
@@ -207,8 +207,6 @@ def maskimage(imagename, imagetransform, cols, rows, cloudname, toponame):
       s2_profile = s2_image.profile
       s2_array = s2_image.read((3,7,9,10)).astype('uint16') # double bracket required for 3D array
       # multiply 3D array of bands by two mask arrays to make all area of sea and cloud to be zero.
-      print('--S2_array data type on import--')
-      print(s2_array.dtype)
       s2_array = s2_array * s2_cloud * s2_land * s2_topo  
       print('--S2_array data type after multiplication --')
       print(s2_array.dtype)
