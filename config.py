@@ -10,7 +10,7 @@ Contributors:
 ARD_WRKDIR = '/neodc/sentinel_ard/data/sentinel_2/2020/04'           # Input ARD data (default is April 2019)  
 GWS = '/gws/nopw/j04/jncc_muirburn'                                  # Group workspace
 GWS_DATA = '/gws/nopw/j04/jncc_muirburn/users/abdb2/duncan_v2'                       # GWS output location (needs an output folder added) 
-LANDMASK = '/gws/nopw/j04/jncc_muirburn/data/Scot_LandMask/landmask_water.tif' # Landmask shapefile location
+LANDMASK = '/gws/nopw/j04/jncc_muirburn/data/Scot_LandMask/landmask_water_v3.tif' # Landmask raster location
 
 # --Other parameters--
 # Image thresholding values - the variable names are set in the code, but the values can be changed here.

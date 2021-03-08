@@ -163,18 +163,19 @@ def countfiles(wd):
     return fileno
 
 
-def maskimage(imagename, imagetransform, cols, rows, cloudname):
+def maskimage(imagename, imagetransform, cols, rows, cloudname, toponame):
     '''
-    Masks the image dataset by the land/sea and cloud masks
+    Masks the image dataset by the land/sea and cloud and topographic shadow masks
     
     Return:
-    An array of the chosen bands with cloud and sea areas as zeroes
+    An array of the chosen bands with cloud, shadow and sea areas as zeroes
     Profile of the input image
 
     Keyword arguments:
     imagename -- path and filename of image to be processed
     imagetransform, cols, rows - parameters for importing area of land raster to match the granule extent
     cloudname -- path and filename of cloud cover dataset to be processed
+    toponame -- path and filename of topographic shadow dataset to be processed
     ''' 
     # open land/sea raster and get transform
     landmask = gdal.Open(config.LANDMASK)
@@ -189,19 +190,28 @@ def maskimage(imagename, imagetransform, cols, rows, cloudname):
 
     # import cloudmask and convert to zeros/ones
     cloudmask = gdal.Open(cloudname)
-    cloudin = cloudmask.GetRasterBand(1).ReadAsArray().astype('uint16')
-    s2_cloud = np.zeros((cloudin.shape))
+    cloudin = cloudmask.GetRasterBand(1).ReadAsArray()
+    s2_cloud = np.zeros((cloudin.shape)).astype('uint16')
     cloud_index = np.nonzero(cloudin < 1)
     s2_cloud[cloud_index[0], cloud_index[1]] = 1
+    
+    # import topomask and convert to zeros/ones
+    topomask = gdal.Open(toponame)
+    topoin = topomask.GetRasterBand(1).ReadAsArray()
+    s2_topo = np.zeros((topoin.shape)).astype('uint16')
+    topo_index = np.nonzero(topoin < 1)
+    s2_topo[topo_index[0], topo_index[1]] = 1
     
     # read in bands required from image using rasterio
     with rasterio.open(imagename, 'r') as s2_image:
       s2_profile = s2_image.profile
       s2_array = s2_image.read((3,7,9,10)).astype('uint16') # double bracket required for 3D array
       # multiply 3D array of bands by two mask arrays to make all area of sea and cloud to be zero.
-      s2_array = s2_array * s2_cloud * s2_land   
+      s2_array = s2_array * s2_cloud * s2_land * s2_topo  
+      print('--S2_array data type after multiplication --')
+      print(s2_array.dtype)
 
-    del s2_cloud, s2_land, cloudin, cloud_index
+    del s2_cloud, s2_land, cloudin, cloud_index, topoin, topo_index, s2_topo
 
     return s2_array, s2_profile
 
@@ -215,7 +225,7 @@ def nbr(swir1, nir):
     swir1 -- short wave infra-red 1 band 
     nir -- near infra-red band
     '''
-    nbr = np.ones(nir.shape).astype(rasterio.float32) * -1
+    nbr = np.zeros(nir.shape).astype(rasterio.float32)
     mask = nir*swir1!=0 # Deal with divide by zero
     nbr[mask] = ((swir1[mask] - nir[mask])/(swir1[mask] + nir[mask]))
 
@@ -232,7 +242,7 @@ def nbr2(swir2, swir1):
     swir2 -- short wave infra-red 2 band 
     swir1 -- short wave infra-red 1 band 
     '''
-    nbr2 = np.ones(swir1.shape).astype(rasterio.float32) * -1
+    nbr2 = np.zeros(swir1.shape).astype(rasterio.float32)
     mask = swir1*swir2!=0 # Deal with divide by zero
     nbr2[mask] = ((swir2[mask] - swir1[mask])/(swir2[mask] + swir1[mask]))
 
@@ -251,7 +261,7 @@ def savi(nir, red, L = 0.5):
     red -- red band
     L -- equation parameter
     '''
-    savi = np.ones(nir.shape).astype(rasterio.float32) * -1
+    savi = np.zeros(nir.shape).astype(rasterio.float32)
     mask = nir*red!=0 # Deal with divide by zero
     savi[mask] = (-1 * (1.5 * ((nir[mask] - red[mask]) / (nir[mask] + red[mask] + L))))
   
@@ -390,7 +400,7 @@ def saveraster(od, datafile, profile, name, prename, postname):
     else:
         # Change the format driver for the destination dataset to
         #kwds['driver'] = 'GTiff'
-        kwds['dtype'] = 'int32'
+        kwds['dtype'] = 'float32'
         kwds['count'] = 1
 
         outname = prename[0] + prename[1] + prename[3] + prename[4] + '_' + postname[0] + postname[1] + postname[3] + postname[4] + '_' + name + '.tif'
@@ -526,7 +536,11 @@ if __name__ == "__main__":
             names.append('clouds.tif')
             s = '_'
             cloudname = s.join(names)
-            # print(cloudname)
+            # gets topographic shadow
+            tnames = postlist[0].split('_')[:7]
+            tnames.append('toposhad.tif')
+            t = '_'
+            toponame = t.join(tnames)
             
             # open Sentinel 2 image to get transform
             postimage = gdal.Open(os.path.join(postlist[1], postlist[0]))
@@ -542,7 +556,7 @@ if __name__ == "__main__":
 
             print('Cropping to land and cloud masks')
 
-            post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols, no_rows, os.path.join(postlist[1], cloudname))
+            post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols, no_rows, os.path.join(postlist[1], cloudname), os.path.join(postlist[1], toponame))
 
             logging.debug('POST image data read')
         
@@ -551,10 +565,16 @@ if __name__ == "__main__":
 
         # PRE FIRE IMAGE
         # create associated cloud image name
+        # gets cloud name
         names = prelist[0].split('_')[:7]
         names.append('clouds.tif')
         s = '_'
         cloudname = s.join(names)
+        # gets topographic shadow
+        tnames = prelist[0].split('_')[:7]
+        tnames.append('toposhad.tif')
+        t = '_'
+        toponame = t.join(tnames)
 
         # open Sentinel 2 image to get transform
         preimage = gdal.Open(os.path.join(prelist[1], prelist[0]))
@@ -568,7 +588,7 @@ if __name__ == "__main__":
         no_cols = preimage.RasterXSize
         no_rows = preimage.RasterYSize
 
-        pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols, no_rows, os.path.join(prelist[1], cloudname))
+        pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols, no_rows, os.path.join(prelist[1], cloudname), os.path.join(prelist[1], toponame))
 
         if prelist[2]==postlist[2]:
 
@@ -581,12 +601,22 @@ if __name__ == "__main__":
             postnbr = nbr(postswir1, postnir)
 
             print('--CALCULATING dNBR2--')
+            postnbr2 = nbr2(postswir2, postswir1)
+            prenbr2 = nbr2(preswir2, preswir1)
+            # combine so that nodata values (zero) in either index layer stay nodata in the output
+            mask = postnbr2*prenbr2!=0
             # Pre/post NBR2 difference
-            dnbr2 = nbr2(postswir2, postswir1) - nbr2(preswir2, preswir1)
+            dnbr2 = np.zeros(postnbr2.shape).astype(rasterio.float32)
+            dnbr2[mask] = postnbr2[mask] - prenbr2[mask]
 
             print('--CALCULATING dSAVI--')
+            postsavi = savi(postnir, postr)
+            presavi = savi(prenir, prer)
+            # combine so that nodata values (zero) in either index layer stay nodata in the output
+            mask = postsavi*presavi!=0
             # Pre/post SAVI difference
-            dsavi = savi(postnir, postr) - savi(prenir, prer)
+            dsavi = np.zeros(postsavi.shape).astype(rasterio.float32)
+            dsavi[mask] = postsavi[mask] - presavi[mask]
 
             # Thresholding
             print('--CALCULATING THRESHOLDING--')
