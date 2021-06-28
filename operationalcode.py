@@ -1,7 +1,5 @@
 """
 SCOTTISH WILDFIRE AND MUIRBURN MAPPING PROJECT: PHASE 2
-operationalcode.ipynb
-
 '''
 Summary: 
 This module contains code for testing the scaling up on JASMIN of calculating burn locations in Scotland, using Sentinel 2 Analysis Ready Data held on CEDA.
