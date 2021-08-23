@@ -611,12 +611,13 @@ if __name__ == "__main__":
             # Seed/burn intersection
             print('--CALCULATING ESTIMATED BURN EXTENTS --')
             burnextents = burn_intersect(burnseed, burnarray)
-
+            # remove first and last rows and columns to account for S2 ARD issue where pixel values are spurious
+            burnextents_sub = burnextents[1:-1,1:-1]
 
             # Save data
             print('--SAVING DATA--')
             #saveraster(od, postnbr, pre_profile, 'postnbr', prelist[0], postlist[0])
-            saveVector(od, burnextents, pre_profile, preim_transform, prelist[0], postlist[0])
+            saveVector(od, burnextents_sub, pre_profile, preim_transform, prelist[0], postlist[0])
 
             # if pre-fire image is partial and it is not the last in the sublist then next image becomes pre-fire image and post-fire image stays the same 
             # get orbit number for maximum coverage of granule being processed
