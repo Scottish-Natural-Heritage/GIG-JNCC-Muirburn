@@ -16,6 +16,9 @@ GWS_DATA = '/gws/nopw/j04/jncc_muirburn/users/abdb2/Phase2_April20' # GWS output
 #TEST LOCATION for when used as a notebook
 #GWS_DATA = '/home/users/abdb2/phase2_test'
 
+# Name for output file for the run
+OUT_SHAPE = 'Wildfire_and_muirburn_April2020.shp'
+
 LANDMASK = '/gws/nopw/j04/jncc_muirburn/data/Scot_LandMask/muirburn_mask_phase2.tif' # Landmask shapefile location
 
 # --Other parameters--
@@ -31,7 +34,7 @@ GROW = {'dsaviq1thresh': 0.206748, 'postnbrq1thresh': 0.173447, 'cloudthresh': 0
 CLOUD = 0.6
 
 # Scottish granule filter - only process the granules for Scotland. 
-
+#PROC_GRANULES = ['T29UPB']
 PROC_GRANULES = ['T29UPB', 'T29VND', 'T29VNE', 'T29VPC', 'T29VPD', 'T29VPE', 'T30UUF', 'T30UUG', 'T30UVF', 'T30UVG', 'T30UWG', 'T30VUH', 'T30VUJ', 'T30VUK', 'T30VUL', 'T30VVH', 'T30VVJ', 'T30VVK', 'T30VVL', 'T30VWH', 'T30VWJ', 'T30VWL', 'T30VWM', 'T30VWN', 'T30VXM', 'T30VXN']
 
 # Dictionary containing the orbit of maximum coverage for each granule.  NB in three instances there are two orbits.
@@ -67,4 +70,3 @@ MAXORBIT = {'T29UPB':['ORB123'],
 
 # Date filter for seasonality - do not process 01 Sept - 31 dec inclusive
 MONTHS_OUT = ['09', '10', '11', '12']
-
