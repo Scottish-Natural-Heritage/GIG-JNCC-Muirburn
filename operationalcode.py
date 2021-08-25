@@ -626,8 +626,15 @@ if __name__ == "__main__":
                 # Seed/burn intersection
                 print('--CALCULATING ESTIMATED BURN EXTENTS --')
                 burnextents = burn_intersect(burnseed, burnarray)
-                # remove first and last rows and columns to account for S2 ARD issue where pixel values are spurious
-                burnextents_sub = burnextents[1:-1,1:-1]
+                # convert first and last rows and columns to zeros to account for S2 ARD issue where pixel values are spurious
+                #lhs
+                burnextents[0:, 0] = 0
+                #rhs
+                burnextents[0:,-1] = 0
+                #bottom
+                burnextents[-1, 0:] = 0
+                #top
+                burnextents[0, 0:] = 0
 
                 # Convert raster features to shapes and write to the shapefile
                 print('--SAVING DATA--')
@@ -643,16 +650,17 @@ if __name__ == "__main__":
                 # need to transform GDAL transform into rasterio affine transformation which is structured differently
                 im_affine = rasterio.Affine.from_gdal(*preim_transform)
                 # make a copy of the array to use as a mask in rasterio.features.shape to avoid all the zeros being turned into polygons
-                mask = burnextents_sub.astype(rasterio.uint8)
+                mask = burnextents.astype(rasterio.uint8)
 
                 shapes = (
                             {'properties': {'raster_val': v, 'pre': prename1, 'post': postname1, 'predate': prename[1], 'postdate': postname[1],'granule': prename[3]}, 'geometry': s}
                             for i, (s, v) 
                             in enumerate(
-                                rasterio.features.shapes(burnextents_sub, mask=mask, transform=im_affine)))
+                                rasterio.features.shapes(burnextents, mask=mask, transform=im_affine)))
                 
                 for rec in shapes:
                     c.write(rec)
+
 
                 # if pre-fire image is partial and it is not the last in the sublist then next image becomes pre-fire image and post-fire image stays the same 
                 # get orbit number for maximum coverage of granule being processed
