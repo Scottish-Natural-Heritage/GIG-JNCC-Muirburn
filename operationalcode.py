@@ -226,7 +226,6 @@ def nbr(swir1, nir):
     mask = nir*swir1!=0 # Deal with divide by zero
     nbr[mask] = ((swir1[mask] - nir[mask])/(swir1[mask] + nir[mask]))
 
-    logging.debug('NBR calculated')
     return nbr
     
 
@@ -243,7 +242,6 @@ def nbr2(swir2, swir1):
     mask = swir1*swir2!=0 # Deal with divide by zero
     nbr2[mask] = ((swir2[mask] - swir1[mask])/(swir2[mask] + swir1[mask]))
 
-    logging.debug('NBR2 calculated')
     return nbr2
 
 def savi(nir, red, L = 0.5):
@@ -262,7 +260,6 @@ def savi(nir, red, L = 0.5):
     mask = nir*red!=0 # Deal with divide by zero
     savi[mask] = (-1 * (1.5 * ((nir[mask] - red[mask]) / (nir[mask] + red[mask] + L))))
   
-    logging.debug('SAVI calculated')
     return savi
 
 
@@ -351,115 +348,60 @@ def burn_intersect(seed, burn):
 
     return intersectArray
 
-def saveraster(od, datafile, profile, name, prename, postname):
-    '''
-    Saves spatial data to tif file 
-    
-    Return:
-    NA
-    
-    Keyword arguements:
-    od -- output directory  
-    datafile -- data to be saved 
-    profile -- spatial data profile for rasterio
-    name -- identifier for the dataset allowing decision making in the code
-    prename -- name of the preburn input image
-    postname -- name of the postburn input image
-    '''
-    
-    #create output base name
-    prename = prename.split('_')
-    postname = postname.split('_')
-
-    kwds = profile
-    
-    if name == 'burnseed':
-        #Export the thresholded raster
-        kwds.update(dtype=rasterio.uint8,
-            count=1,
-            compress='lzw')
-        outname = prename[0] + prename[1] + prename[3] + prename[4] + '_' + postname[0] + postname[1] + postname[3] + postname[4] + '_' + name + '.tif'
-
-        with rasterio.open(os.path.join(od, outname), 'w', **kwds) as dst_dataset:
-            dst_dataset.write(datafile, 1)
-
-
-    elif name == 'burnarea':
-        #Export the thresholded raster
-        kwds.update(dtype=rasterio.uint8,
-            count=1,
-            compress='lzw')
-        outname = prename[0] + prename[1] + prename[3] + prename[4] + '_' + postname[0] + postname[1] + postname[3] + postname[4] + '_' + name + '.tif'
-
-        with rasterio.open(os.path.join(od, outname), 'w', **kwds) as dst_dataset:
-            dst_dataset.write(datafile, 1)
-
-    else:
-        # Change the format driver for the destination dataset to
-        #kwds['driver'] = 'GTiff'
-        kwds['dtype'] = 'float32'
-        kwds['count'] = 1
-
-        outname = prename[0] + prename[1] + prename[3] + prename[4] + '_' + postname[0] + postname[1] + postname[3] + postname[4] + '_' + name + '.tif'
-
-        with rasterio.open((os.path.join(od, outname)), 'w', **kwds) as dst_dataset:
-        # Write data to the destination dataset.
-            dst_dataset.write(datafile, 1)    
-
-
-# def saveVector(od, burnedArray, profile, transform, prename, postname):
+# def saveraster(od, datafile, profile, name, prename, postname):
 #     '''
-#     Creates and saves the vector layer  
+#     Saves spatial data to tif file 
     
 #     Return:
 #     NA
     
 #     Keyword arguements:
 #     od -- output directory  
-#     burnedArray -- estimated burn extents data to be saved 
+#     datafile -- data to be saved 
 #     profile -- spatial data profile for rasterio
-#     transform -- transform data for writing files
+#     name -- identifier for the dataset allowing decision making in the code
 #     prename -- name of the preburn input image
 #     postname -- name of the postburn input image
 #     '''
-#     prename1 = prename
-#     postname1 = postname
-
-#     #create output base name
-#     prename = prename1.split('_')
-#     postname = postname1.split('_')
-#     # satname 
-#     outname = prename[0] + prename[1] + prename[3] + prename[4] + '_' + postname[0] + postname[1] + postname[3] + postname[4] + '.shp'
-#     # need to transform GDAL transform into rasterio affine transformation which is structured differently
-#     im_affine = rasterio.Affine.from_gdal(*transform)
-#     # make a copy of the array to use as a mask in rasterio.features.shape to avoid all the zeros being turned into polygons
-#     mask = burnedArray.astype(rasterio.uint8)
-
-#     shapes = (
-#                 {'properties': {'raster_val': v, 'pre': prename1, 'post': postname1, 'predate': prename[1], 'postdate': postname[1],'granule': prename[3]}, 'geometry': s}
-#                 for i, (s, v) 
-#                 in enumerate(
-#                     rasterio.features.shapes(burnedArray, mask=mask, transform=im_affine)))
     
-#     crs = from_epsg(27700)
-#     driver='ESRI Shapefile'
-#     schema = {'geometry': 'Polygon',
-#     'properties': {'raster_val': 'int',
-#                 'pre': 'str',
-#                 'post': 'str',
-#                 'predate':'str',
-#                 'postdate':'str',
-#                 'granule':'str'}}
+#     #create output base name
+#     prename = prename.split('_')
+#     postname = postname.split('_')
 
-#     with fiona.open(os.path.join(od,outname),
-#                      'w',
-#                       driver=driver,
-#                       crs=crs,
-#                       schema=schema) as c:
-        
-#         for rec in shapes:
-#             c.write(rec)
-#         c.close()
+#     kwds = profile
+    
+#     if name == 'burnseed':
+#         #Export the thresholded raster
+#         kwds.update(dtype=rasterio.uint8,
+#             count=1,
+#             compress='lzw')
+#         outname = prename[0] + prename[1] + prename[3] + prename[4] + '_' + postname[0] + postname[1] + postname[3] + postname[4] + '_' + name + '.tif'
+
+#         with rasterio.open(os.path.join(od, outname), 'w', **kwds) as dst_dataset:
+#             dst_dataset.write(datafile, 1)
+
+
+#     elif name == 'burnarea':
+#         #Export the thresholded raster
+#         kwds.update(dtype=rasterio.uint8,
+#             count=1,
+#             compress='lzw')
+#         outname = prename[0] + prename[1] + prename[3] + prename[4] + '_' + postname[0] + postname[1] + postname[3] + postname[4] + '_' + name + '.tif'
+
+#         with rasterio.open(os.path.join(od, outname), 'w', **kwds) as dst_dataset:
+#             dst_dataset.write(datafile, 1)
+
+#     else:
+#         # Change the format driver for the destination dataset to
+#         #kwds['driver'] = 'GTiff'
+#         kwds['dtype'] = 'float32'
+#         kwds['count'] = 1
+
+#         outname = prename[0] + prename[1] + prename[3] + prename[4] + '_' + postname[0] + postname[1] + postname[3] + postname[4] + '_' + name + '.tif'
+
+#         with rasterio.open((os.path.join(od, outname)), 'w', **kwds) as dst_dataset:
+#         # Write data to the destination dataset.
+#             dst_dataset.write(datafile, 1)    
 
 #======================================================================    
 # ========================== MAIN CODE ======================================
@@ -475,11 +417,11 @@ if __name__ == "__main__":
     
     # Set logfile 
     logfile = os.path.join(od, (datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")+'-processing.log'))
-    logging.basicConfig(filename=logfile, level=logging.DEBUG, format='%(asctime)s %(message)s')
+    logging.basicConfig(filename=logfile, level=logging.INFO, format='Date-Time : %(asctime)s : Line No. : %(lineno)d - %(message)s')
 
     # Check directory validity
     directorycheck(wd, od)
-    logging.debug('Directories validated')
+    logging.info('Directories validated')
 
     # Get data and list of processed files
     # First call in any file names that have been processed. Then get unprocessed files, for the granules in PROC_GRANULES, 
@@ -490,7 +432,7 @@ if __name__ == "__main__":
 
     print('Processing list constructed' + ' - number of files to process: ' + str(len(toprocess)))
     
-    logging.debug('Processing list constructed')
+    logging.info('Processing list constructed' + ' - number of files to process: ' + str(len(toprocess)))
     
     
     # Start timer
@@ -559,8 +501,6 @@ if __name__ == "__main__":
 
                     post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols, no_rows, os.path.join(postlist[1], cloudname), os.path.join(postlist[1], toponame))
 
-                    logging.debug('POST image data read')
-
                 # PRE FIRE IMAGE
                 prelist = toprocessx[x+y]
 
@@ -582,9 +522,11 @@ if __name__ == "__main__":
                 no_rows = preimage.RasterYSize
 
                 pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols, no_rows, os.path.join(prelist[1], cloudname), os.path.join(prelist[1], toponame))
-
-                print('Processing post-fire granule:', postlist[2], postlist[4], postlist[3], 'against pre-fire granule:', prelist[2], prelist[4], prelist[3])
-
+                
+                message = ('Processing post-fire granule:', postlist[2], postlist[4], postlist[3], 'against pre-fire granule:', prelist[2], prelist[4], prelist[3])
+                print(message)
+                logging.info(message)
+                
                 postr, postnir, postswir1, postswir2 = post_array.astype(float)
                 #postnir, postswir1 = post_array.astype(float)
                 prer, prenir, preswir1, preswir2 = pre_array.astype(float)
@@ -661,7 +603,6 @@ if __name__ == "__main__":
                 for rec in shapes:
                     c.write(rec)
 
-
                 # if pre-fire image is partial and it is not the last in the sublist then next image becomes pre-fire image and post-fire image stays the same 
                 # get orbit number for maximum coverage of granule being processed
                 orbit_list = config.MAXORBIT.get(prelist[2], 'granule not in dictionary')
@@ -678,7 +619,7 @@ if __name__ == "__main__":
         c.close()
         
     print('--WRITING OUTPUT FILES--')
-    logging.debug('Writing output file')
+    logging.info('Writing output file')
 
 
     # pickle file
@@ -694,7 +635,6 @@ if __name__ == "__main__":
     endtime1=datetime.datetime.now()
     deltatime1=endtime1-starttime1
     print(("Time to process:  {0}  hr:min:sec".format(deltatime1)))
-    logging.debug("Time to process:  {0}  hr:min:sec".format(deltatime1))
-
+    logging.info("Time to process:  {0}  hr:min:sec".format(deltatime1))
 
 
