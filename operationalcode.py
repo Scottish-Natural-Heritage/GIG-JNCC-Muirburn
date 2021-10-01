@@ -387,7 +387,8 @@ def gran_process (toprocess):
         # get the last month in the list so that these are not used as post fire images later
         last_gran = toprocessx[-1]
         last_date = last_gran[4]
-        last_month = last_date[4:6]
+        # gets year and month for year long processing runs
+        last_month = last_date[2:6]
 
         x = 0
         y = 1
@@ -399,7 +400,7 @@ def gran_process (toprocess):
                 
                 # check not in last month, in which case break out the while loop
                 date = postlist[4]
-                month = date[4:6]
+                month = date[2:6]
                 if month == last_month:
                     break
 
