@@ -16,21 +16,21 @@ GWS_DATA = '/gws/nopw/j04/jncc_muirburn/users/abdb2/Phase2_2019_2020' # GWS outp
 #TEST LOCATION for when used as a notebook
 #GWS_DATA = '/home/users/abdb2/phase2_test'
 
-# Name for output file for the run
+# Name for output file for the run - contains start and end dates of run and one or two clod cover thresholds used
 OUT_SHAPE = 'Wildfire_and_muirburn_201905_202004_06_03.shp'
 
-LANDMASK = '/gws/nopw/j04/jncc_muirburn/data/Scot_LandMask/muirburn_mask_phase2.tif' # Landmask shapefile location
+LANDMASK = '/gws/nopw/j04/jncc_muirburn/data/Scot_LandMask/muirburn_mask_phase2.tif' # Masking shapefile location
 
 #TEST LOCATION for when used as a notebook
 #LANDMASK = '/home/users/abdb2/phase2_test/muirburn_mask_phase2.tif'
 
 # --Other parameters--
-# Image thresholding values - the variable names are set in the code, but the values can be changed here.
+# Image thresholding values for core burn pixels - the variable names are set in the code, but the values can be changed here.
 # The type is a helper variable so that users know how it is being applied. It is not used in the code (global == to all images). 
 #THRESHOLD = {'threshdsavi': 0.2853, 'threshpostnbr': 0.2395, 'threshdnbr2': 0.8, 'threshdnbr2_shad': 0.045, 'type': 'global'}
 THRESHOLD = {'threshdsavi': 0.3, 'threshpostnbr': 0.3, 'threshdnbr2': 0.8, 'threshdnbr2_shad': 0.045, 'type': 'global'}
 
-# Image thresholding values - the variable names are set in the code, but the values can be changed here.
+# Threshold values for 'growing' the burn areas - the variable names are set in the code, but the values can be changed here.
 # The type is a helper variable so that users know how it is being applied. It is not used in the code (global == to all images). 
 GROW = {'dsaviq1thresh': 0.206748, 'postnbrq1thresh': 0.173447, 'cloudthresh': 0.8, 'shadowthresh': 0.045,'type': 'global'}
 
@@ -40,7 +40,6 @@ CLOUD = 0.6
 CLOUD2 = 0.3
 
 # Scottish granule filter - only process the granules for Scotland. 
-#PROC_GRANULES = ['T29UPB']
 PROC_GRANULES = ['T29UPB', 'T29VND', 'T29VNE', 'T29VPC', 'T29VPD', 'T29VPE', 'T30UUF', 'T30UUG', 'T30UVF', 'T30UVG', 'T30UWG', 'T30VUH', 'T30VUJ', 'T30VUK', 'T30VUL', 'T30VVH', 'T30VVJ', 'T30VVK', 'T30VVL', 'T30VWH', 'T30VWJ', 'T30VWL', 'T30VWM', 'T30VWN', 'T30VXM', 'T30VXN']
 
 # Dictionary containing the orbit of maximum coverage for each granule.  NB in three instances there are two orbits.
