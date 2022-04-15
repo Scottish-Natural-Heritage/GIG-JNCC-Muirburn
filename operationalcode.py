@@ -617,11 +617,7 @@ if __name__ == "__main__":
     starttime1 = datetime.datetime.now()
     print('--STARTING PROCESSING--')
 
-    # Get data and list of processed files
-    # First call in any file names that have been processed. Then get unprocessed files, for the granules in PROC_GRANULES, 
-    # ignoring certain months listed in MONTHS_OUT and those above the cloud threshold
-    
-    # proc_list = picklecheck(od)
+    # Get list of granules to process that match granule name, date and cloud coverage criteria   
     toprocess, toprocess2 = getdatalist(wd, config.MONTHS_LIST , config.PROC_GRANULES, config.CLOUD, config.CLOUD2)
 
     print('Processing list constructed' + ' - number of files to process: ' + str(len(toprocess)))
