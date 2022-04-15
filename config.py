@@ -16,7 +16,7 @@ GWS_DATA = '/gws/nopw/j04/jncc_muirburn/users/abdb2/Phase2_2019_2020' # GWS outp
 #TEST LOCATION for when used as a notebook
 #GWS_DATA = '/home/users/abdb2/phase2_test'
 
-# Name for output file for the run - contains start and end dates of run and one or two clod cover thresholds used
+# Name for output file for the run - contains start and end dates of run and one or two cloud cover thresholds used
 OUT_SHAPE = 'Wildfire_and_muirburn_201905_202004_06_03.shp'
 
 LANDMASK = '/gws/nopw/j04/jncc_muirburn/data/Scot_LandMask/muirburn_mask_phase2.tif' # Masking shapefile location
