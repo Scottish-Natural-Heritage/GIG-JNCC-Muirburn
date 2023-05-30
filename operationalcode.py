@@ -405,12 +405,12 @@ def gran_process (toprocess):
                     break
 
                 # gets cloud name
-                names = postlist[0].split('_')[:7]
+                names = postlist[0].split('vmsk')[0]
                 names.append('clouds.tif')
                 s = '_'
                 cloudname = s.join(names)
                 # gets topographic shadow
-                tnames = postlist[0].split('_')[:7]
+                tnames = postlist[0].split('vmsk')[0]
                 tnames.append('toposhad.tif')
                 t = '_'
                 toponame = t.join(tnames)
@@ -428,12 +428,12 @@ def gran_process (toprocess):
             prelist = toprocessx[x+y]
 
             # gets cloud name
-            names = prelist[0].split('_')[:7]
+            names = prelist[0].split('vmsk')[0]
             names.append('clouds.tif')
             s = '_'
             cloudname = s.join(names)
             # gets topographic shadow
-            tnames = prelist[0].split('_')[:7]
+            tnames = prelist[0].split('vmsk')[0]
             tnames.append('toposhad.tif')
             t = '_'
             toponame = t.join(tnames)
