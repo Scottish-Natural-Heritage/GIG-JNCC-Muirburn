@@ -406,14 +406,11 @@ def gran_process (toprocess):
 
                 # gets cloud name
                 names = postlist[0].split('vmsk')[0]
-                names.append('clouds.tif')
-                s = '_'
-                cloudname = s.join(names)
+                cloudname = names + "clouds.tif"
+                
                 # gets topographic shadow
                 tnames = postlist[0].split('vmsk')[0]
-                tnames.append('toposhad.tif')
-                t = '_'
-                toponame = t.join(tnames)
+                toponame = tnames + "toposhad.tif"
 
                 # open Sentinel 2 image to get transform
                 postimage = gdal.Open(os.path.join(postlist[1], postlist[0]))
@@ -429,14 +426,11 @@ def gran_process (toprocess):
 
             # gets cloud name
             names = prelist[0].split('vmsk')[0]
-            names.append('clouds.tif')
-            s = '_'
-            cloudname = s.join(names)
+            cloudname = names + "clouds.tif"
+         
             # gets topographic shadow
             tnames = prelist[0].split('vmsk')[0]
-            tnames.append('toposhad.tif')
-            t = '_'
-            toponame = t.join(tnames)
+            toponame = tnames + "toposhad.tif"
 
             # open Sentinel 2 image to get transform
             preimage = gdal.Open(os.path.join(prelist[1], prelist[0]))
