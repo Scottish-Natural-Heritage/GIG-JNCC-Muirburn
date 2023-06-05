@@ -406,11 +406,11 @@ def gran_process (toprocess):
 
                 # gets cloud name
                 names = postlist[0].split('vmsk')[0]
-                cloudname_pro = names + "clouds.tif"
+                cloudname_post = names + "clouds.tif"
                 
                 # gets topographic shadow
                 tnames = postlist[0].split('vmsk')[0]
-                toponame_pro = tnames + "toposhad.tif"
+                toponame_post = tnames + "toposhad.tif"
 
                 # open Sentinel 2 image to get transform
                 postimage = gdal.Open(os.path.join(postlist[1], postlist[0]))
@@ -419,7 +419,7 @@ def gran_process (toprocess):
                 no_cols_post = postimage.RasterXSize
                 no_rows_post = postimage.RasterYSize
 
-                #post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols, no_rows, os.path.join(postlist[1], cloudname), os.path.join(postlist[1], toponame))
+                post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols_post, no_rows_post, os.path.join(postlist[1], cloudname_post), os.path.join(postlist[1], toponame_post))
 
             # PRE FIRE IMAGE
             prelist = toprocessx[x+y]
@@ -452,9 +452,10 @@ def gran_process (toprocess):
                 # gdal translate to clip post fire image to bounding coordinates of prefire image
                 # Note the output tif is stored in memory and coordinates need to be entered from upper left to lower right.
                 postimage_clip = gdal.Translate('/vsimem/in_memory_output.tif', postimage, projWin = [x_min, y_max, x_max, y_min])
-                
-            # NEED TO FIGURE THIS BIT OUT
-            post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols_post, no_rows_post, os.path.join(postlist[1], cloudname_post), os.path.join(postlist[1], toponame_post))
+                # replace post_array with clipped version
+                post_array, post_profile = maskimage(#IMAGE FILENAME#, postim_transform, no_cols_pre, no_rows_pre, os.path.join(postlist[1], cloudname_post), os.path.join(postlist[1], toponame_post)) 
+            
+                      
             pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols_pre, no_rows_pre, os.path.join(prelist[1], cloudname_pre), os.path.join(prelist[1], toponame_pre))
 
             message = ('Processing post-fire granule:', postlist[2], postlist[4], postlist[3], 'against pre-fire granule:', prelist[2], prelist[4], prelist[3])
