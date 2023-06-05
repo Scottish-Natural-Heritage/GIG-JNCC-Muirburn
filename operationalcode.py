@@ -406,39 +406,56 @@ def gran_process (toprocess):
 
                 # gets cloud name
                 names = postlist[0].split('vmsk')[0]
-                cloudname = names + "clouds.tif"
+                cloudname_pro = names + "clouds.tif"
                 
                 # gets topographic shadow
                 tnames = postlist[0].split('vmsk')[0]
-                toponame = tnames + "toposhad.tif"
+                toponame_pro = tnames + "toposhad.tif"
 
                 # open Sentinel 2 image to get transform
                 postimage = gdal.Open(os.path.join(postlist[1], postlist[0]))
                 postim_transform = postimage.GetGeoTransform()
 
-                no_cols = postimage.RasterXSize
-                no_rows = postimage.RasterYSize
+                no_cols_post = postimage.RasterXSize
+                no_rows_post = postimage.RasterYSize
 
-                post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols, no_rows, os.path.join(postlist[1], cloudname), os.path.join(postlist[1], toponame))
+                #post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols, no_rows, os.path.join(postlist[1], cloudname), os.path.join(postlist[1], toponame))
 
             # PRE FIRE IMAGE
             prelist = toprocessx[x+y]
 
             # gets cloud name
             names = prelist[0].split('vmsk')[0]
-            cloudname = names + "clouds.tif"
+            cloudname_pre = names + "clouds.tif"
          
             # gets topographic shadow
             tnames = prelist[0].split('vmsk')[0]
-            toponame = tnames + "toposhad.tif"
+            toponame_pre = tnames + "toposhad.tif"
 
             # open Sentinel 2 image to get transform
             preimage = gdal.Open(os.path.join(prelist[1], prelist[0]))
             preim_transform = preimage.GetGeoTransform()
-            no_cols = preimage.RasterXSize
-            no_rows = preimage.RasterYSize
-
-            pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols, no_rows, os.path.join(prelist[1], cloudname), os.path.join(prelist[1], toponame))
+            no_cols_pre = preimage.RasterXSize
+            no_rows_pre = preimage.RasterYSize
+            
+            # check if pre and post fire images have the same granule size for 2022-2023 change in particular
+            if (no_cols_post == no_cols_pre) and (no_rows_post == no_rows_pre):
+            print("Dimensions of images are equal")
+            #go ahead with rest of code
+            else:
+                print("Dimensions are NOT equal")
+                # work out bounding coordinates of pre fire image
+                x_min = int(preim_transform[0])
+                y_min = int(preim_transform[3] - (no_rows_pre * preim_transform[1]))
+                x_max = int(x_min + (no_cols_pre * preim_transform[1]))
+                y_max = int(preim_transform[3])
+                # gdal translate to clip post fire image to bounding coordinates of prefire image
+                # Note the output tif is stored in memory and coordinates need to be entered from upper left to lower right.
+                postimage_clip = gdal.Translate('/vsimem/in_memory_output.tif', postimage, projWin = [x_min, y_max, x_max, y_min])
+                
+            # NEED TO FIGURE THIS BIT OUT
+            post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols_post, no_rows_post, os.path.join(postlist[1], cloudname_post), os.path.join(postlist[1], toponame_post))
+            pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols_pre, no_rows_pre, os.path.join(prelist[1], cloudname_pre), os.path.join(prelist[1], toponame_pre))
 
             message = ('Processing post-fire granule:', postlist[2], postlist[4], postlist[3], 'against pre-fire granule:', prelist[2], prelist[4], prelist[3])
             print(message)
