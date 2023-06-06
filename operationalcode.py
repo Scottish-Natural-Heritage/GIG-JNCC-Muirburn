@@ -437,6 +437,8 @@ def gran_process (toprocess):
             preim_transform = preimage.GetGeoTransform()
             no_cols_pre = preimage.RasterXSize
             no_rows_pre = preimage.RasterYSize
+                     
+            pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols_pre, no_rows_pre, os.path.join(prelist[1], cloudname_pre), os.path.join(prelist[1], toponame_pre))
             
             # check if pre and post fire images have the same granule size for 2022-2023 change in particular
             if (no_cols_post == no_cols_pre) and (no_rows_post == no_rows_pre):
@@ -444,20 +446,21 @@ def gran_process (toprocess):
             #go ahead with rest of code
             else:
                 print("Dimensions are NOT equal")
-                # work out bounding coordinates of pre fire image
-                x_min = int(preim_transform[0])
-                y_min = int(preim_transform[3] - (no_rows_pre * preim_transform[1]))
-                x_max = int(x_min + (no_cols_pre * preim_transform[1]))
-                y_max = int(preim_transform[3])
-                # gdal translate to clip post fire image to bounding coordinates of prefire image
-                # Note the output tif is stored in memory and coordinates need to be entered from upper left to lower right.
-                postimage_clip = gdal.Translate('/vsimem/in_memory_output.tif', postimage, projWin = [x_min, y_max, x_max, y_min])
-                # replace post_array with clipped version
-                post_array, post_profile = maskimage(#IMAGE FILENAME#, postim_transform, no_cols_pre, no_rows_pre, os.path.join(postlist[1], cloudname_post), os.path.join(postlist[1], toponame_post)) 
-            
-                      
-            pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols_pre, no_rows_pre, os.path.join(prelist[1], cloudname_pre), os.path.join(prelist[1], toponame_pre))
+                # subset post fire array to match that of the smaller prefire array
+                if preim_transform[3] == postim_transform[3]: # catch for dividing by zero
+                    row_start = 0
+                else:
+                    row_start = int((preim_transform[3] - postim_transform[3])/preim_transform[1])
+                row_end = int(row_start + no_rows_pre)
 
+                if preim_transform[0] == postim_transform[0]:
+                    col_start = 0
+                else:
+                    col_start = int((preim_transform[0] - postim_transform[0])/preim_transform[1])
+                col_end = int(col_start + no_cols_pre)
+                # slice array
+                post_array = post_array[:, row_start:row_end, col_start:col_end]
+                
             message = ('Processing post-fire granule:', postlist[2], postlist[4], postlist[3], 'against pre-fire granule:', prelist[2], prelist[4], prelist[3])
             print(message)
             logging.info(message)
@@ -501,7 +504,7 @@ def gran_process (toprocess):
             # Seed/burn intersection
             print('--CALCULATING ESTIMATED BURN EXTENTS --')
             burnextents = burn_intersect(burnseed, burnarray)
-            # convert first and last rows and columns to zeros to account for S2 ARD issue where pixel values are spurious
+            # REMOVE IN 2024:convert first and last rows and columns to zeros to account for S2 ARD issue where pixel values are spurious
             #lhs
             burnextents[0:, 0] = 0
             #rhs
