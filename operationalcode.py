@@ -442,8 +442,8 @@ def gran_process (toprocess):
             
             # check if pre and post fire images have the same granule size for 2022-2023 change in particular
             if (no_cols_post == no_cols_pre) and (no_rows_post == no_rows_pre):
-            print("Dimensions of images are equal")
-            #go ahead with rest of code
+                print("Dimensions of images are equal")
+                #go ahead with rest of code
             else:
                 print("Dimensions are NOT equal")
                 # subset post fire array to match that of the smaller prefire array
