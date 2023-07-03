@@ -11,13 +11,13 @@ Contributors:
 ARD_WRKDIR = '/neodc/sentinel_ard/data/sentinel_2'           # Input ARD data  
 
 # OPERATIONAL LOCATION
-GWS_DATA = '/gws/nopw/j04/jncc_muirburn/users/abdb2/Phase2_2019_2020' # GWS output location (needs an output folder added) 
+GWS_DATA = '/gws/nopw/j04/jncc_muirburn/users/abdb2/Run_2022_2023' # GWS output location (needs an output folder added) 
 
 #TEST LOCATION for when used as a notebook
 #GWS_DATA = '/home/users/abdb2/phase2_test'
 
 # Name for output file for the run - contains start and end dates of run and one or two cloud cover thresholds used
-OUT_SHAPE = 'Wildfire_and_muirburn_201905_202004_06_03.shp'
+OUT_SHAPE = 'Wildfire_and_muirburn_202205_202304_06_03.shp'
 
 LANDMASK = '/gws/nopw/j04/jncc_muirburn/data/Scot_LandMask/muirburn_mask_phase2.tif' # Masking shapefile location
 
@@ -74,5 +74,5 @@ MAXORBIT = {'T29UPB':['ORB123'],
                }
 
 # Date filter - include month previous to date range required
-MONTHS_LIST = ['/2019/04','/2019/05','/2019/06','/2019/07','/2019/08',
-               '/2019/09','/2019/10','/2019/11','/2019/12','/2020/01','/2020/02','/2020/03','/2020/04']
+MONTHS_LIST = ['/2022/04','/2022/05','/2022/06','/2022/07','/2022/08','/2022/09','/2022/10','/2022/11','/2022/12','/2023/01','/2023/02','/2023/03','/2023/04']
+
