@@ -443,31 +443,55 @@ def gran_process (toprocess):
             # check if pre and post fire images have the same granule size for 2022-2023 change in particular
             if (no_cols_post == no_cols_pre) and (no_rows_post == no_rows_pre):
                 print("Dimensions of images are equal")
-                #go ahead with rest of code
+                equalDims = True
+                # go ahead with rest of code
             else:
                 print("Dimensions are NOT equal")
-                # subset post fire array to match that of the smaller prefire array
-                if preim_transform[3] == postim_transform[3]: # catch for dividing by zero
-                    row_start = 0
-                else:
-                    row_start = int((preim_transform[3] - postim_transform[3])/preim_transform[1])
-                row_end = int(row_start + no_rows_pre)
+                equalDims = False
+                # find each image's bounding box 
+                # r1 has left, top, right, bottom of dataset's bounds in geospatial coordinates. 
+                r1 = [preim_transform[0], preim_transform[3], preim_transform[0] + (preim_transform[1] * no_cols_pre), preim_transform[3] + (preim_transform[5] * no_rows_pre)] 
+                r2 = [postim_transform[0], postim_transform[3], postim_transform[0] + (postim_transform[1] * no_cols_post), postim_transform[3] + (postim_transform[5] * no_rows_post)] 
+                print ('bounding box: %s' % str(r1))
+                print ('bounding box: %s' % str(r2))
 
-                if preim_transform[0] == postim_transform[0]:
-                    col_start = 0
-                else:
-                    col_start = int((preim_transform[0] - postim_transform[0])/preim_transform[1])
-                col_end = int(col_start + no_cols_pre)
-                # slice array
-                post_array = post_array[:, row_start:row_end, col_start:col_end]
+                # find intersection between bounding boxes (max left, min top, min right, max bottom)
+                intersection = [max(r1[0], r2[0]), min(r1[1], r2[1]), min(r1[2], r2[2]), max(r1[3], r2[3])] 
+                print ('intersection coords: %s' % str(intersection))
+
+                # left offset in number of pixels
+                colStart1 = abs(int(round((intersection[0]-r1[0])/preim_transform[1])))
+                # top offset in number of pixels
+                rowStart1 = abs(int(round((intersection[1]-r1[1])/preim_transform[5])))
+                # right intersection - left intersection divided by pixel width and add on x offset
+                colEnd1 = abs(int(round((intersection[2]- (intersection[0]))/preim_transform[1])) + colStart1)
+                # bottom intersection - top intersection divided by pixel width and add on y offset
+                rowEnd1 = abs(int(round((intersection[3]- (intersection[1]))/preim_transform[5])) + rowStart1)
+
+                colStart2 = abs(int(round((intersection[0]-r2[0])/postim_transform[1])))
+                rowStart2 = abs(int(round((intersection[1]-r2[1])/postim_transform[5])))
+                colEnd2 = abs(int(round((intersection[2]- (intersection[0]))/postim_transform[1])) + colStart2)
+                rowEnd2 = abs(int(round((intersection[3]- (intersection[1]))/postim_transform[5])) + rowStart2)
+
+                print("Pre fire image array: column start: %s , column end: %s, row start: %s, row end: %s" % (str(colStart1),str(colEnd1),str(rowStart1),str(rowEnd1)))
+                print("Post fire image array: column start: %s , column end: %s, row start: %s, row end: %s" % (str(colStart2),str(colEnd2),str(rowStart2),str(rowEnd2)))        
+                
+                # slice arrays
+                pre_array_isect = pre_array[:, rowStart1:rowEnd1, colStart1:colEnd1]
+                post_array_isect = post_array[:, rowStart2:rowEnd2, colStart2:colEnd2]
                 
             message = ('Processing post-fire granule:', postlist[2], postlist[4], postlist[3], 'against pre-fire granule:', prelist[2], prelist[4], prelist[3])
             print(message)
             logging.info(message)
 
-            postr, postnir, postswir1, postswir2 = post_array.astype(float)
-            prer, prenir, preswir1, preswir2 = pre_array.astype(float)
-
+            # if equal dimensions use the full arrays, if not use the area of overlap or intersect arrays
+            if equalDims:
+                postr, postnir, postswir1, postswir2 = post_array.astype(float)
+                prer, prenir, preswir1, preswir2 = pre_array.astype(float)
+            else:
+                postr, postnir, postswir1, postswir2 = post_array_isect.astype(float)
+                prer, prenir, preswir1, preswir2 = pre_array_isect.astype(float)
+                
             print('--CALCULATING postNBR--')
             postnbr = nbr(postswir1, postnir)
 
