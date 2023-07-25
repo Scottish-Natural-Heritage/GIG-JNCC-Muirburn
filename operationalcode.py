@@ -657,65 +657,68 @@ if __name__ == "__main__":
     print('--STARTING PROCESSING--')
 
     # Get list of granules to process that match granule name, date and cloud coverage criteria   
-    toprocess, toprocess2 = getdatalist(wd, config.MONTHS_LIST , config.PROC_GRANULES, config.CLOUD, config.CLOUD2)
+    # Change to process each unique granule name separately into a separate shapefile.  This means whole process does not have to be 
+    # re-run if errors occur
+    for gran in config.PROC_GRANULES:
+        toprocess, toprocess2 = getdatalist(wd, config.MONTHS_LIST , gran, config.CLOUD, config.CLOUD2)
 
-    print('Processing list constructed' + ' - number of files to process: ' + str(len(toprocess)))
-    logging.info('Processing list constructed' + ' - number of files to process: ' + str(len(toprocess)))
+        print('Processing list constructed' + ' - number of files to process: ' + str(len(toprocess)))
+        logging.info('Processing list constructed' + ' - number of files to process: ' + str(len(toprocess)))
     
     
-    # If too few images for comparison, exit the program
-    if len(toprocess) < 2:
+        # If too few images for comparison, exit the program
+        if len(toprocess) < 2:
             print('--EXITING--')
             print('Too few images to process in test')
             logging.error('Too few images supplied for processing')
             sys.exit()
     
-    if toprocess2:
-        print('Second processing list constructed' + ' - number of files to process: ' + str(len(toprocess2)))
-        logging.info('Second processing list constructed' + ' - number of files to process: ' + str(len(toprocess2)))
-        if len(toprocess2) < 2:
-            print('--EXITING--')
-            print('Too few images to process in test')
-            logging.error('Too few images supplied for processing')
-            sys.exit()
-            
-    # as this list contains granules selected using higher cloud threshold we do not need to worry about second list.
-    checklist = copy.deepcopy(toprocess)
-    
-    # set up shapefile and open to write outputs  during processing
-    outname = config.OUT_SHAPE
-    crs = from_epsg(27700)
-    driver='ESRI Shapefile'
-    schema = {'geometry': 'Polygon',
-    'properties': {'raster_val': 'int',
-                'pre': 'str',
-                'post': 'str',
-                'predate':'str',
-                'postdate':'str',
-                'granule':'str'}}
-
-    with fiona.open(os.path.join(od,outname),
-                     'w',
-                      driver=driver,
-                      crs=crs,
-                      schema=schema) as c:
-        
-        print('Starting processing list 1')
-        logging.info('Starting processing list 1')
-        gran_process(toprocess)
-
         if toprocess2:
-            print('Starting processing list 2')
-            logging.info('Starting processing list 2')
-            gran_process(toprocess2)
-        else:
-            print('No second run')
-            logging.info('No second run')
+            print('Second processing list constructed' + ' - number of files to process: ' + str(len(toprocess2)))
+            logging.info('Second processing list constructed' + ' - number of files to process: ' + str(len(toprocess2)))
+            if len(toprocess2) < 2:
+                print('--EXITING--')
+                print('Too few images to process in test')
+                logging.error('Too few images supplied for processing')
+                sys.exit()
+            
+        # as this list contains granules selected using higher cloud threshold we do not need to worry about second list.
+        checklist = copy.deepcopy(toprocess)
+    
+        # set up shapefile and open to write outputs  during processing
+        outname = gran + '.shp'
+        crs = from_epsg(27700)
+        driver='ESRI Shapefile'
+        schema = {'geometry': 'Polygon',
+        'properties': {'raster_val': 'int',
+                    'pre': 'str',
+                    'post': 'str',
+                    'predate':'str',
+                    'postdate':'str',
+                    'granule':'str'}}
+
+        with fiona.open(os.path.join(od,outname),
+                         'w',
+                          driver=driver,
+                          crs=crs,
+                          schema=schema) as c:
         
-        c.close()
+            print('Starting processing list 1')
+            logging.info('Starting processing list 1')
+            gran_process(toprocess)
+
+            if toprocess2:
+                print('Starting processing list 2')
+                logging.info('Starting processing list 2')
+                gran_process(toprocess2)
+            else:
+                print('No second run')
+                logging.info('No second run')
         
-    print('--WRITING OUTPUT FILES--')
-    logging.info('Writing output file')
+            c.close()
+        
+        print('--WRITING OUTPUT FILES--')
+        logging.info('Writing output file')
 
     # Stop timer
     endtime1=datetime.datetime.now()
