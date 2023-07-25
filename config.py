@@ -13,16 +13,7 @@ ARD_WRKDIR = '/neodc/sentinel_ard/data/sentinel_2'           # Input ARD data
 # OPERATIONAL LOCATION
 GWS_DATA = '/gws/nopw/j04/jncc_muirburn/users/abdb2/Run_2022_2023' # GWS output location (needs an output folder added) 
 
-#TEST LOCATION for when used as a notebook
-#GWS_DATA = '/home/users/abdb2/phase2_test'
-
-# Name for output file for the run - contains start and end dates of run and one or two cloud cover thresholds used
-OUT_SHAPE = 'Wildfire_and_muirburn_202205_202304_06_03.shp'
-
 LANDMASK = '/gws/nopw/j04/jncc_muirburn/data/Scot_LandMask/muirburn_mask_phase2.tif' # Masking shapefile location
-
-#TEST LOCATION for when used as a notebook
-#LANDMASK = '/home/users/abdb2/phase2_test/muirburn_mask_phase2.tif'
 
 # --Other parameters--
 # Image thresholding values for core burn pixels - the variable names are set in the code, but the values can be changed here.
