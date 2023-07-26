@@ -377,160 +377,199 @@ def gran_process (toprocess):
 
     Keyword arguements:
     toprocess -- list of granules to process
-    '''
-    for gran in config.PROC_GRANULES:
-        # get subset of list containing unique granule name
-        toprocessx = [x for x in toprocess if x[2] == gran]
-        print(*[' '.join(map(str,item)) for item in toprocessx], sep='\n')
-        print ('-------')
-        
-        # get the last month in the list so that these are not used as post fire images later
-        last_gran = toprocessx[-1]
-        last_date = last_gran[4]
-        # gets year and month for year long processing runs
-        last_month = last_date[2:6]
+    '''     
+    # get the last month in the list so that these are not used as post fire images later
+    last_gran = toprocess[-1]
+    last_date = last_gran[4]
+    # gets year and month for year long processing runs
+    last_month = last_date[2:6]
 
-        x = 0
-        y = 1
-        newpost = True
-        while x < (len(toprocessx)-1):
-            # get new cropped post-fire image
-            if newpost:
-                postlist = toprocessx[x]
-                
-                # check not in last month, in which case break out the while loop
-                date = postlist[4]
-                month = date[2:6]
-                if month == last_month:
-                    break
-
-                # gets cloud name
-                names = postlist[0].split('vmsk')[0]
-                cloudname = names + "clouds.tif"
-                
-                # gets topographic shadow
-                tnames = postlist[0].split('vmsk')[0]
-                toponame = tnames + "toposhad.tif"
-
-                # open Sentinel 2 image to get transform
-                postimage = gdal.Open(os.path.join(postlist[1], postlist[0]))
-                postim_transform = postimage.GetGeoTransform()
-
-                no_cols = postimage.RasterXSize
-                no_rows = postimage.RasterYSize
-
-                post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols, no_rows, os.path.join(postlist[1], cloudname), os.path.join(postlist[1], toponame))
-
-            # PRE FIRE IMAGE
-            prelist = toprocessx[x+y]
+    x = 0
+    y = 1
+    newpost = True
+    while x < (len(toprocess)-1):
+        # get new cropped post-fire image
+        if newpost:
+            postlist = toprocess[x]
+            
+            # check not in last month, in which case break out the while loop
+            date = postlist[4]
+            month = date[2:6]
+            if month == last_month:
+                break
 
             # gets cloud name
-            names = prelist[0].split('vmsk')[0]
-            cloudname = names + "clouds.tif"
-         
+            names = postlist[0].split('vmsk')[0]
+            cloudname_post = names + "clouds.tif"
+            
             # gets topographic shadow
-            tnames = prelist[0].split('vmsk')[0]
-            toponame = tnames + "toposhad.tif"
+            tnames = postlist[0].split('vmsk')[0]
+            toponame_post = tnames + "toposhad.tif"
 
             # open Sentinel 2 image to get transform
-            preimage = gdal.Open(os.path.join(prelist[1], prelist[0]))
-            preim_transform = preimage.GetGeoTransform()
-            no_cols = preimage.RasterXSize
-            no_rows = preimage.RasterYSize
+            postimage = gdal.Open(os.path.join(postlist[1], postlist[0]))
+            postim_transform = postimage.GetGeoTransform()
 
-            pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols, no_rows, os.path.join(prelist[1], cloudname), os.path.join(prelist[1], toponame))
+            no_cols_post = postimage.RasterXSize
+            no_rows_post = postimage.RasterYSize
 
-            message = ('Processing post-fire granule:', postlist[2], postlist[4], postlist[3], 'against pre-fire granule:', prelist[2], prelist[4], prelist[3])
-            print(message)
-            logging.info(message)
+            post_array, post_profile = maskimage(os.path.join(postlist[1], postlist[0]), postim_transform, no_cols_post, no_rows_post, os.path.join(postlist[1], cloudname_post), os.path.join(postlist[1], toponame_post))
 
+        # PRE FIRE IMAGE
+        prelist = toprocess[x+y]
+
+        # gets cloud name
+        names = prelist[0].split('vmsk')[0]
+        cloudname_pre = names + "clouds.tif"
+     
+        # gets topographic shadow
+        tnames = prelist[0].split('vmsk')[0]
+        toponame_pre = tnames + "toposhad.tif"
+
+        # open Sentinel 2 image to get transform
+        preimage = gdal.Open(os.path.join(prelist[1], prelist[0]))
+        preim_transform = preimage.GetGeoTransform()
+        no_cols_pre = preimage.RasterXSize
+        no_rows_pre = preimage.RasterYSize
+                 
+        pre_array, pre_profile = maskimage(os.path.join(prelist[1], prelist[0]), preim_transform, no_cols_pre, no_rows_pre, os.path.join(prelist[1], cloudname_pre), os.path.join(prelist[1], toponame_pre))
+        
+        # check if pre and post fire images have the same granule size for 2022-2023 change in particular
+        if (no_cols_post == no_cols_pre) and (no_rows_post == no_rows_pre):
+            print("Dimensions of images are equal")
+            equalDims = True
+            # go ahead with rest of code
+        else:
+            print("Dimensions are NOT equal")
+            equalDims = False
+            # find each image's bounding box 
+            # r1 has left, top, right, bottom of dataset's bounds in geospatial coordinates. 
+            r1 = [preim_transform[0], preim_transform[3], preim_transform[0] + (preim_transform[1] * no_cols_pre), preim_transform[3] + (preim_transform[5] * no_rows_pre)] 
+            r2 = [postim_transform[0], postim_transform[3], postim_transform[0] + (postim_transform[1] * no_cols_post), postim_transform[3] + (postim_transform[5] * no_rows_post)] 
+            print ('bounding box: %s' % str(r1))
+            print ('bounding box: %s' % str(r2))
+
+            # find intersection between bounding boxes (max left, min top, min right, max bottom)
+            intersection = [max(r1[0], r2[0]), min(r1[1], r2[1]), min(r1[2], r2[2]), max(r1[3], r2[3])] 
+            print ('intersection coords: %s' % str(intersection))
+
+            # left offset in number of pixels
+            colStart1 = abs(int(round((intersection[0]-r1[0])/preim_transform[1])))
+            # top offset in number of pixels
+            rowStart1 = abs(int(round((intersection[1]-r1[1])/preim_transform[5])))
+            # right intersection - left intersection divided by pixel width and add on x offset
+            colEnd1 = abs(int(round((intersection[2]- (intersection[0]))/preim_transform[1])) + colStart1)
+            # bottom intersection - top intersection divided by pixel width and add on y offset
+            rowEnd1 = abs(int(round((intersection[3]- (intersection[1]))/preim_transform[5])) + rowStart1)
+
+            colStart2 = abs(int(round((intersection[0]-r2[0])/postim_transform[1])))
+            rowStart2 = abs(int(round((intersection[1]-r2[1])/postim_transform[5])))
+            colEnd2 = abs(int(round((intersection[2]- (intersection[0]))/postim_transform[1])) + colStart2)
+            rowEnd2 = abs(int(round((intersection[3]- (intersection[1]))/postim_transform[5])) + rowStart2)
+
+            print("Pre fire image array: column start: %s , column end: %s, row start: %s, row end: %s" % (str(colStart1),str(colEnd1),str(rowStart1),str(rowEnd1)))
+            print("Post fire image array: column start: %s , column end: %s, row start: %s, row end: %s" % (str(colStart2),str(colEnd2),str(rowStart2),str(rowEnd2)))        
+            
+            # slice arrays
+            pre_array_isect = pre_array[:, rowStart1:rowEnd1, colStart1:colEnd1]
+            post_array_isect = post_array[:, rowStart2:rowEnd2, colStart2:colEnd2]
+            
+        message = ('Processing post-fire granule:', postlist[2], postlist[4], postlist[3], 'against pre-fire granule:', prelist[2], prelist[4], prelist[3])
+        print(message)
+        logging.info(message)
+
+        # if equal dimensions use the full arrays, if not use the area of overlap or intersect arrays
+        if equalDims:
             postr, postnir, postswir1, postswir2 = post_array.astype(float)
             prer, prenir, preswir1, preswir2 = pre_array.astype(float)
+        else:
+            postr, postnir, postswir1, postswir2 = post_array_isect.astype(float)
+            prer, prenir, preswir1, preswir2 = pre_array_isect.astype(float)
+            
+        print('--CALCULATING postNBR--')
+        postnbr = nbr(postswir1, postnir)
 
-            print('--CALCULATING postNBR--')
-            postnbr = nbr(postswir1, postnir)
+        print('--CALCULATING dNBR2--')
+        postnbr2 = nbr2(postswir2, postswir1)
+        prenbr2 = nbr2(preswir2, preswir1)
+        # combine so that nodata values (zero) in either index layer stay nodata in the output
+        mask = postnbr2*prenbr2!=0
+        # Pre/post NBR2 difference
+        dnbr2 = np.zeros(postnbr2.shape).astype(rasterio.float32)
+        dnbr2[mask] = postnbr2[mask] - prenbr2[mask]
 
-            print('--CALCULATING dNBR2--')
-            postnbr2 = nbr2(postswir2, postswir1)
-            prenbr2 = nbr2(preswir2, preswir1)
-            # combine so that nodata values (zero) in either index layer stay nodata in the output
-            mask = postnbr2*prenbr2!=0
-            # Pre/post NBR2 difference
-            dnbr2 = np.zeros(postnbr2.shape).astype(rasterio.float32)
-            dnbr2[mask] = postnbr2[mask] - prenbr2[mask]
+        print('--CALCULATING dSAVI--')
+        postsavi = savi(postnir, postr)
+        presavi = savi(prenir, prer)
+        # combine so that nodata values (zero) in either index layer stay nodata in the output
+        mask = postsavi*presavi!=0
+        # Pre/post SAVI difference
+        dsavi = np.zeros(postsavi.shape).astype(rasterio.float32)
+        dsavi[mask] = postsavi[mask] - presavi[mask]
 
-            print('--CALCULATING dSAVI--')
-            postsavi = savi(postnir, postr)
-            presavi = savi(prenir, prer)
-            # combine so that nodata values (zero) in either index layer stay nodata in the output
-            mask = postsavi*presavi!=0
-            # Pre/post SAVI difference
-            dsavi = np.zeros(postsavi.shape).astype(rasterio.float32)
-            dsavi[mask] = postsavi[mask] - presavi[mask]
+        # Thresholding
+        print('--CALCULATING THRESHOLDING--')
+        thresholds = config.THRESHOLD 
+        # print('Thresholds used: ', thresholds)
+        burnseed = threshold_imgs(dsavi, postnbr, dnbr2, thresholds)
 
-            # Thresholding
-            print('--CALCULATING THRESHOLDING--')
-            thresholds = config.THRESHOLD 
-            # print('Thresholds used: ', thresholds)
-            burnseed = threshold_imgs(dsavi, postnbr, dnbr2, thresholds)
+        # Region growing
+        print('--CALCULATING BURN REGIONS--')
+        thresholds = config.GROW 
+        # print('Thresholds used: ', thresholds)
+        burnarray = grow_burn(dsavi, postnbr, dnbr2, thresholds)
 
-            # Region growing
-            print('--CALCULATING BURN REGIONS--')
-            thresholds = config.GROW 
-            # print('Thresholds used: ', thresholds)
-            burnarray = grow_burn(dsavi, postnbr, dnbr2, thresholds)
+        # Seed/burn intersection
+        print('--CALCULATING ESTIMATED BURN EXTENTS --')
+        burnextents = burn_intersect(burnseed, burnarray)
+        # REMOVE IN 2024:convert first and last rows and columns to zeros to account for S2 ARD issue where pixel values are spurious
+        #lhs
+        burnextents[0:, 0] = 0
+        #rhs
+        burnextents[0:,-1] = 0
+        #bottom
+        burnextents[-1, 0:] = 0
+        #top
+        burnextents[0, 0:] = 0
 
-            # Seed/burn intersection
-            print('--CALCULATING ESTIMATED BURN EXTENTS --')
-            burnextents = burn_intersect(burnseed, burnarray)
-            # convert first and last rows and columns to zeros to account for S2 ARD issue where pixel values are spurious
-            #lhs
-            burnextents[0:, 0] = 0
-            #rhs
-            burnextents[0:,-1] = 0
-            #bottom
-            burnextents[-1, 0:] = 0
-            #top
-            burnextents[0, 0:] = 0
+        # Convert raster features to shapes and write to the shapefile
+        print('--SAVING DATA--')
+        #saveraster(od, postnbr, pre_profile, 'postnbr', prelist[0], postlist[0])
+        #saveVector(od, burnextents_sub, pre_profile, preim_transform, prelist[0], postlist[0])
+        prename1 = prelist[0]
+        postname1 = postlist[0]
 
-            # Convert raster features to shapes and write to the shapefile
-            print('--SAVING DATA--')
-            #saveraster(od, postnbr, pre_profile, 'postnbr', prelist[0], postlist[0])
-            #saveVector(od, burnextents_sub, pre_profile, preim_transform, prelist[0], postlist[0])
-            prename1 = prelist[0]
-            postname1 = postlist[0]
+        #create output base name
+        prename = prename1.split('_')
+        postname = postname1.split('_')
 
-            #create output base name
-            prename = prename1.split('_')
-            postname = postname1.split('_')
+        # need to transform GDAL transform into rasterio affine transformation which is structured differently
+        im_affine = rasterio.Affine.from_gdal(*preim_transform)
+        # make a copy of the array to use as a mask in rasterio.features.shape to avoid all the zeros being turned into polygons
+        mask = burnextents.astype(rasterio.uint8)
 
-            # need to transform GDAL transform into rasterio affine transformation which is structured differently
-            im_affine = rasterio.Affine.from_gdal(*preim_transform)
-            # make a copy of the array to use as a mask in rasterio.features.shape to avoid all the zeros being turned into polygons
-            mask = burnextents.astype(rasterio.uint8)
+        shapes = (
+                    {'properties': {'raster_val': v, 'pre': prename1, 'post': postname1, 'predate': prename[1], 'postdate': postname[1],'granule': prename[3]}, 'geometry': s}
+                    for i, (s, v) 
+                    in enumerate(
+                        rasterio.features.shapes(burnextents, mask=mask, transform=im_affine)))
 
-            shapes = (
-                        {'properties': {'raster_val': v, 'pre': prename1, 'post': postname1, 'predate': prename[1], 'postdate': postname[1],'granule': prename[3]}, 'geometry': s}
-                        for i, (s, v) 
-                        in enumerate(
-                            rasterio.features.shapes(burnextents, mask=mask, transform=im_affine)))
+        for rec in shapes:
+            c.write(rec)
 
-            for rec in shapes:
-                c.write(rec)
+        # if pre-fire image is partial and it is not the last in the sublist then next image becomes pre-fire image and post-fire image stays the same 
+        # get orbit number(s) for maximum coverage of granule being processed
+        orbit_list = config.MAXORBIT.get(prelist[2], 'granule not in dictionary')
 
-            # if pre-fire image is partial and it is not the last in the sublist then next image becomes pre-fire image and post-fire image stays the same 
-            # get orbit number(s) for maximum coverage of granule being processed
-            orbit_list = config.MAXORBIT.get(prelist[2], 'granule not in dictionary')
-
-            if (prelist[3] not in orbit_list) and ((len(toprocessx) - (x+y)>1)):
-                y = y+1
-                newpost = False
-            # else the prefire granule was a full granule and y is reset to 1, x is incremented, and a new granule becomes the post-fire image
-            else: 
-                y = 1
-                x = x+1
-                newpost = True
-        print('-----')
+        if (prelist[3] not in orbit_list) and ((len(toprocess) - (x+y)>1)):
+            y = y+1
+            newpost = False
+        # else the prefire granule was a full granule and y is reset to 1, x is incremented, and a new granule becomes the post-fire image
+        else: 
+            y = 1
+            x = x+1
+            newpost = True
+    print('-----')
 
 # def saveraster(od, datafile, profile, name, prename, postname):
 #     '''
@@ -612,65 +651,68 @@ if __name__ == "__main__":
     print('--STARTING PROCESSING--')
 
     # Get list of granules to process that match granule name, date and cloud coverage criteria   
-    toprocess, toprocess2 = getdatalist(wd, config.MONTHS_LIST , config.PROC_GRANULES, config.CLOUD, config.CLOUD2)
+    # Change to process each unique granule name separately into a separate shapefile.  This means whole process does not have to be 
+    # re-run if errors occur
+    for gran in config.PROC_GRANULES:
+        toprocess, toprocess2 = getdatalist(wd, config.MONTHS_LIST , gran, config.CLOUD, config.CLOUD2)
 
-    print('Processing list constructed' + ' - number of files to process: ' + str(len(toprocess)))
-    logging.info('Processing list constructed' + ' - number of files to process: ' + str(len(toprocess)))
+        print('Processing list constructed' + ' - number of files to process: ' + str(len(toprocess)))
+        logging.info('Processing list constructed' + ' - number of files to process: ' + str(len(toprocess)))
     
     
-    # If too few images for comparison, exit the program
-    if len(toprocess) < 2:
+        # If too few images for comparison, exit the program
+        if len(toprocess) < 2:
             print('--EXITING--')
             print('Too few images to process in test')
             logging.error('Too few images supplied for processing')
             sys.exit()
     
-    if toprocess2:
-        print('Second processing list constructed' + ' - number of files to process: ' + str(len(toprocess2)))
-        logging.info('Second processing list constructed' + ' - number of files to process: ' + str(len(toprocess2)))
-        if len(toprocess2) < 2:
-            print('--EXITING--')
-            print('Too few images to process in test')
-            logging.error('Too few images supplied for processing')
-            sys.exit()
-            
-    # as this list contains granules selected using higher cloud threshold we do not need to worry about second list.
-    checklist = copy.deepcopy(toprocess)
-    
-    # set up shapefile and open to write outputs  during processing
-    outname = config.OUT_SHAPE
-    crs = from_epsg(27700)
-    driver='ESRI Shapefile'
-    schema = {'geometry': 'Polygon',
-    'properties': {'raster_val': 'int',
-                'pre': 'str',
-                'post': 'str',
-                'predate':'str',
-                'postdate':'str',
-                'granule':'str'}}
-
-    with fiona.open(os.path.join(od,outname),
-                     'w',
-                      driver=driver,
-                      crs=crs,
-                      schema=schema) as c:
-        
-        print('Starting processing list 1')
-        logging.info('Starting processing list 1')
-        gran_process(toprocess)
-
         if toprocess2:
-            print('Starting processing list 2')
-            logging.info('Starting processing list 2')
-            gran_process(toprocess2)
-        else:
-            print('No second run')
-            logging.info('No second run')
+            print('Second processing list constructed' + ' - number of files to process: ' + str(len(toprocess2)))
+            logging.info('Second processing list constructed' + ' - number of files to process: ' + str(len(toprocess2)))
+            if len(toprocess2) < 2:
+                print('--EXITING--')
+                print('Too few images to process in test')
+                logging.error('Too few images supplied for processing')
+                sys.exit()
+            
+        # as this list contains granules selected using higher cloud threshold we do not need to worry about second list.
+        checklist = copy.deepcopy(toprocess)
+    
+        # set up shapefile and open to write outputs  during processing
+        outname = gran + '.shp'
+        crs = from_epsg(27700)
+        driver='ESRI Shapefile'
+        schema = {'geometry': 'Polygon',
+        'properties': {'raster_val': 'int',
+                    'pre': 'str',
+                    'post': 'str',
+                    'predate':'str',
+                    'postdate':'str',
+                    'granule':'str'}}
+
+        with fiona.open(os.path.join(od,outname),
+                         'w',
+                          driver=driver,
+                          crs=crs,
+                          schema=schema) as c:
         
-        c.close()
+            print('Starting processing list 1')
+            logging.info('Starting processing list 1')
+            gran_process(toprocess)
+
+            if toprocess2:
+                print('Starting processing list 2')
+                logging.info('Starting processing list 2')
+                gran_process(toprocess2)
+            else:
+                print('No second run')
+                logging.info('No second run')
         
-    print('--WRITING OUTPUT FILES--')
-    logging.info('Writing output file')
+            c.close()
+        
+        print('--WRITING OUTPUT FILES--')
+        logging.info('Writing output file')
 
     # Stop timer
     endtime1=datetime.datetime.now()
